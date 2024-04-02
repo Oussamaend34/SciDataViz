@@ -1,0 +1,1258 @@
+Grammar:
+
+Rule 0     S' -> s
+Rule 1     s -> statements
+Rule 2     statements -> empty
+Rule 3     statements -> statement ; statements
+Rule 4     statements -> statement
+Rule 5     statement -> WRITE vector
+Rule 6     statement -> func
+Rule 7     statement -> LS
+Rule 8     statement -> CLEAR
+Rule 9     statement -> QUIT
+Rule 10    statement -> ID ASSIGN value  [precedence=left, level=1]
+Rule 11    statement -> value
+Rule 12    empty -> <empty>
+Rule 13    value -> FLOAT LPAREN value RPAREN
+Rule 14    value -> INTEGER LPAREN value RPAREN
+Rule 15    value -> TYPE LPAREN value RPAREN
+Rule 16    value -> READ
+Rule 17    value -> term
+Rule 18    value -> value MINUS term  [precedence=left, level=2]
+Rule 19    value -> value PLUS term  [precedence=left, level=2]
+Rule 20    factor -> vector
+Rule 21    factor -> array
+Rule 22    factor -> ID
+Rule 23    factor -> LPAREN value RPAREN
+Rule 24    factor -> STRLT
+Rule 25    factor -> NUMBER
+Rule 26    factor -> MINUS factor  [precedence=right, level=4]
+Rule 27    term -> factor
+Rule 28    term -> term DIVIDE factor  [precedence=left, level=3]
+Rule 29    term -> term MATMUL factor
+Rule 30    term -> term TIMES factor  [precedence=left, level=3]
+Rule 31    array -> LSQB elements RSQB
+Rule 32    elements -> value , elements
+Rule 33    elements -> value
+Rule 34    vector -> LPAREN empty RPAREN
+Rule 35    vector -> LPAREN elements RPAREN
+Rule 36    func -> ID vector
+
+Unused terminals:
+
+    STRING
+    LIST
+    VECTOR
+
+Terminals, with rules where they appear:
+
+,                    : 32
+;                    : 3
+ASSIGN               : 10
+CLEAR                : 8
+DIVIDE               : 28
+FLOAT                : 13
+ID                   : 10 22 36
+INTEGER              : 14
+LIST                 : 
+LPAREN               : 13 14 15 23 34 35
+LS                   : 7
+LSQB                 : 31
+MATMUL               : 29
+MINUS                : 18 26
+NUMBER               : 25
+PLUS                 : 19
+QUIT                 : 9
+READ                 : 16
+RPAREN               : 13 14 15 23 34 35
+RSQB                 : 31
+STRING               : 
+STRLT                : 24
+TIMES                : 30
+TYPE                 : 15
+VECTOR               : 
+WRITE                : 5
+error                : 
+
+Nonterminals, with rules where they appear:
+
+array                : 21
+elements             : 31 32 35
+empty                : 2 34
+factor               : 26 27 28 29 30
+func                 : 6
+s                    : 0
+statement            : 3 4
+statements           : 1 3
+term                 : 17 18 19 28 29 30
+value                : 10 11 13 14 15 18 19 23 32 33
+vector               : 5 20 36
+
+
+state 0
+
+    (0) S' -> . s
+    (1) s -> . statements
+    (2) statements -> . empty
+    (3) statements -> . statement ; statements
+    (4) statements -> . statement
+    (12) empty -> .
+    (5) statement -> . WRITE vector
+    (6) statement -> . func
+    (7) statement -> . LS
+    (8) statement -> . CLEAR
+    (9) statement -> . QUIT
+    (10) statement -> . ID ASSIGN value
+    (11) statement -> . value
+    (36) func -> . ID vector
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    $end            reduce using rule 12 (empty -> .)
+    WRITE           shift and go to state 5
+    LS              shift and go to state 8
+    CLEAR           shift and go to state 9
+    QUIT            shift and go to state 10
+    ID              shift and go to state 11
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    s                              shift and go to state 1
+    statements                     shift and go to state 2
+    empty                          shift and go to state 3
+    statement                      shift and go to state 4
+    vector                         shift and go to state 6
+    func                           shift and go to state 7
+    value                          shift and go to state 12
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    array                          shift and go to state 21
+
+state 1
+
+    (0) S' -> s .
+
+
+state 2
+
+    (1) s -> statements .
+    $end            reduce using rule 1 (s -> statements .)
+
+
+state 3
+
+    (2) statements -> empty .
+    $end            reduce using rule 2 (statements -> empty .)
+
+
+state 4
+
+    (3) statements -> statement . ; statements
+    (4) statements -> statement .
+    ;               shift and go to state 25
+    $end            reduce using rule 4 (statements -> statement .)
+
+
+state 5
+
+    (5) statement -> WRITE . vector
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    LPAREN          shift and go to state 27
+
+    vector                         shift and go to state 26
+
+state 6
+
+    (20) factor -> vector .
+    DIVIDE          reduce using rule 20 (factor -> vector .)
+    MATMUL          reduce using rule 20 (factor -> vector .)
+    TIMES           reduce using rule 20 (factor -> vector .)
+    MINUS           reduce using rule 20 (factor -> vector .)
+    PLUS            reduce using rule 20 (factor -> vector .)
+    ;               reduce using rule 20 (factor -> vector .)
+    $end            reduce using rule 20 (factor -> vector .)
+    RPAREN          reduce using rule 20 (factor -> vector .)
+    ,               reduce using rule 20 (factor -> vector .)
+    RSQB            reduce using rule 20 (factor -> vector .)
+
+
+state 7
+
+    (6) statement -> func .
+    ;               reduce using rule 6 (statement -> func .)
+    $end            reduce using rule 6 (statement -> func .)
+
+
+state 8
+
+    (7) statement -> LS .
+    ;               reduce using rule 7 (statement -> LS .)
+    $end            reduce using rule 7 (statement -> LS .)
+
+
+state 9
+
+    (8) statement -> CLEAR .
+    ;               reduce using rule 8 (statement -> CLEAR .)
+    $end            reduce using rule 8 (statement -> CLEAR .)
+
+
+state 10
+
+    (9) statement -> QUIT .
+    ;               reduce using rule 9 (statement -> QUIT .)
+    $end            reduce using rule 9 (statement -> QUIT .)
+
+
+state 11
+
+    (10) statement -> ID . ASSIGN value
+    (36) func -> ID . vector
+    (22) factor -> ID .
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    ASSIGN          shift and go to state 28
+    DIVIDE          reduce using rule 22 (factor -> ID .)
+    MATMUL          reduce using rule 22 (factor -> ID .)
+    TIMES           reduce using rule 22 (factor -> ID .)
+    MINUS           reduce using rule 22 (factor -> ID .)
+    PLUS            reduce using rule 22 (factor -> ID .)
+    ;               reduce using rule 22 (factor -> ID .)
+    $end            reduce using rule 22 (factor -> ID .)
+    LPAREN          shift and go to state 27
+
+    vector                         shift and go to state 29
+
+state 12
+
+    (11) statement -> value .
+    (18) value -> value . MINUS term
+    (19) value -> value . PLUS term
+    ;               reduce using rule 11 (statement -> value .)
+    $end            reduce using rule 11 (statement -> value .)
+    MINUS           shift and go to state 30
+    PLUS            shift and go to state 31
+
+
+state 13
+
+    (13) value -> FLOAT . LPAREN value RPAREN
+    LPAREN          shift and go to state 32
+
+
+state 14
+
+    (23) factor -> LPAREN . value RPAREN
+    (34) vector -> LPAREN . empty RPAREN
+    (35) vector -> LPAREN . elements RPAREN
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (12) empty -> .
+    (32) elements -> . value , elements
+    (33) elements -> . value
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    RPAREN          reduce using rule 12 (empty -> .)
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    value                          shift and go to state 33
+    empty                          shift and go to state 34
+    elements                       shift and go to state 35
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 15
+
+    (14) value -> INTEGER . LPAREN value RPAREN
+    LPAREN          shift and go to state 37
+
+
+state 16
+
+    (15) value -> TYPE . LPAREN value RPAREN
+    LPAREN          shift and go to state 38
+
+
+state 17
+
+    (16) value -> READ .
+    MINUS           reduce using rule 16 (value -> READ .)
+    PLUS            reduce using rule 16 (value -> READ .)
+    ;               reduce using rule 16 (value -> READ .)
+    $end            reduce using rule 16 (value -> READ .)
+    RPAREN          reduce using rule 16 (value -> READ .)
+    ,               reduce using rule 16 (value -> READ .)
+    RSQB            reduce using rule 16 (value -> READ .)
+
+
+state 18
+
+    (17) value -> term .
+    (28) term -> term . DIVIDE factor
+    (29) term -> term . MATMUL factor
+    (30) term -> term . TIMES factor
+    MINUS           reduce using rule 17 (value -> term .)
+    PLUS            reduce using rule 17 (value -> term .)
+    ;               reduce using rule 17 (value -> term .)
+    $end            reduce using rule 17 (value -> term .)
+    RPAREN          reduce using rule 17 (value -> term .)
+    ,               reduce using rule 17 (value -> term .)
+    RSQB            reduce using rule 17 (value -> term .)
+    DIVIDE          shift and go to state 39
+    MATMUL          shift and go to state 40
+    TIMES           shift and go to state 41
+
+
+state 19
+
+    (26) factor -> MINUS . factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    factor                         shift and go to state 42
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 20
+
+    (27) term -> factor .
+    DIVIDE          reduce using rule 27 (term -> factor .)
+    MATMUL          reduce using rule 27 (term -> factor .)
+    TIMES           reduce using rule 27 (term -> factor .)
+    MINUS           reduce using rule 27 (term -> factor .)
+    PLUS            reduce using rule 27 (term -> factor .)
+    ;               reduce using rule 27 (term -> factor .)
+    $end            reduce using rule 27 (term -> factor .)
+    RPAREN          reduce using rule 27 (term -> factor .)
+    ,               reduce using rule 27 (term -> factor .)
+    RSQB            reduce using rule 27 (term -> factor .)
+
+
+state 21
+
+    (21) factor -> array .
+    DIVIDE          reduce using rule 21 (factor -> array .)
+    MATMUL          reduce using rule 21 (factor -> array .)
+    TIMES           reduce using rule 21 (factor -> array .)
+    MINUS           reduce using rule 21 (factor -> array .)
+    PLUS            reduce using rule 21 (factor -> array .)
+    ;               reduce using rule 21 (factor -> array .)
+    $end            reduce using rule 21 (factor -> array .)
+    RPAREN          reduce using rule 21 (factor -> array .)
+    ,               reduce using rule 21 (factor -> array .)
+    RSQB            reduce using rule 21 (factor -> array .)
+
+
+state 22
+
+    (24) factor -> STRLT .
+    DIVIDE          reduce using rule 24 (factor -> STRLT .)
+    MATMUL          reduce using rule 24 (factor -> STRLT .)
+    TIMES           reduce using rule 24 (factor -> STRLT .)
+    MINUS           reduce using rule 24 (factor -> STRLT .)
+    PLUS            reduce using rule 24 (factor -> STRLT .)
+    ;               reduce using rule 24 (factor -> STRLT .)
+    $end            reduce using rule 24 (factor -> STRLT .)
+    RPAREN          reduce using rule 24 (factor -> STRLT .)
+    ,               reduce using rule 24 (factor -> STRLT .)
+    RSQB            reduce using rule 24 (factor -> STRLT .)
+
+
+state 23
+
+    (25) factor -> NUMBER .
+    DIVIDE          reduce using rule 25 (factor -> NUMBER .)
+    MATMUL          reduce using rule 25 (factor -> NUMBER .)
+    TIMES           reduce using rule 25 (factor -> NUMBER .)
+    MINUS           reduce using rule 25 (factor -> NUMBER .)
+    PLUS            reduce using rule 25 (factor -> NUMBER .)
+    ;               reduce using rule 25 (factor -> NUMBER .)
+    $end            reduce using rule 25 (factor -> NUMBER .)
+    RPAREN          reduce using rule 25 (factor -> NUMBER .)
+    ,               reduce using rule 25 (factor -> NUMBER .)
+    RSQB            reduce using rule 25 (factor -> NUMBER .)
+
+
+state 24
+
+    (31) array -> LSQB . elements RSQB
+    (32) elements -> . value , elements
+    (33) elements -> . value
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    elements                       shift and go to state 43
+    value                          shift and go to state 44
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 25
+
+    (3) statements -> statement ; . statements
+    (2) statements -> . empty
+    (3) statements -> . statement ; statements
+    (4) statements -> . statement
+    (12) empty -> .
+    (5) statement -> . WRITE vector
+    (6) statement -> . func
+    (7) statement -> . LS
+    (8) statement -> . CLEAR
+    (9) statement -> . QUIT
+    (10) statement -> . ID ASSIGN value
+    (11) statement -> . value
+    (36) func -> . ID vector
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    $end            reduce using rule 12 (empty -> .)
+    WRITE           shift and go to state 5
+    LS              shift and go to state 8
+    CLEAR           shift and go to state 9
+    QUIT            shift and go to state 10
+    ID              shift and go to state 11
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    statement                      shift and go to state 4
+    statements                     shift and go to state 45
+    empty                          shift and go to state 3
+    vector                         shift and go to state 6
+    func                           shift and go to state 7
+    value                          shift and go to state 12
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    array                          shift and go to state 21
+
+state 26
+
+    (5) statement -> WRITE vector .
+    ;               reduce using rule 5 (statement -> WRITE vector .)
+    $end            reduce using rule 5 (statement -> WRITE vector .)
+
+
+state 27
+
+    (34) vector -> LPAREN . empty RPAREN
+    (35) vector -> LPAREN . elements RPAREN
+    (12) empty -> .
+    (32) elements -> . value , elements
+    (33) elements -> . value
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    RPAREN          reduce using rule 12 (empty -> .)
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    empty                          shift and go to state 34
+    elements                       shift and go to state 35
+    value                          shift and go to state 44
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 28
+
+    (10) statement -> ID ASSIGN . value
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    value                          shift and go to state 46
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 29
+
+    (36) func -> ID vector .
+    ;               reduce using rule 36 (func -> ID vector .)
+    $end            reduce using rule 36 (func -> ID vector .)
+
+
+state 30
+
+    (18) value -> value MINUS . term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    term                           shift and go to state 47
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 31
+
+    (19) value -> value PLUS . term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    term                           shift and go to state 48
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 32
+
+    (13) value -> FLOAT LPAREN . value RPAREN
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    value                          shift and go to state 49
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 33
+
+    (23) factor -> LPAREN value . RPAREN
+    (18) value -> value . MINUS term
+    (19) value -> value . PLUS term
+    (32) elements -> value . , elements
+    (33) elements -> value .
+  ! shift/reduce conflict for RPAREN resolved as shift
+    RPAREN          shift and go to state 50
+    MINUS           shift and go to state 30
+    PLUS            shift and go to state 31
+    ,               shift and go to state 51
+
+
+state 34
+
+    (34) vector -> LPAREN empty . RPAREN
+    RPAREN          shift and go to state 52
+
+
+state 35
+
+    (35) vector -> LPAREN elements . RPAREN
+    RPAREN          shift and go to state 53
+
+
+state 36
+
+    (22) factor -> ID .
+    DIVIDE          reduce using rule 22 (factor -> ID .)
+    MATMUL          reduce using rule 22 (factor -> ID .)
+    TIMES           reduce using rule 22 (factor -> ID .)
+    RPAREN          reduce using rule 22 (factor -> ID .)
+    MINUS           reduce using rule 22 (factor -> ID .)
+    PLUS            reduce using rule 22 (factor -> ID .)
+    ,               reduce using rule 22 (factor -> ID .)
+    ;               reduce using rule 22 (factor -> ID .)
+    $end            reduce using rule 22 (factor -> ID .)
+    RSQB            reduce using rule 22 (factor -> ID .)
+
+
+state 37
+
+    (14) value -> INTEGER LPAREN . value RPAREN
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    value                          shift and go to state 54
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 38
+
+    (15) value -> TYPE LPAREN . value RPAREN
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    value                          shift and go to state 55
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 39
+
+    (28) term -> term DIVIDE . factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    factor                         shift and go to state 56
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 40
+
+    (29) term -> term MATMUL . factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    factor                         shift and go to state 57
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 41
+
+    (30) term -> term TIMES . factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    factor                         shift and go to state 58
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 42
+
+    (26) factor -> MINUS factor .
+    DIVIDE          reduce using rule 26 (factor -> MINUS factor .)
+    MATMUL          reduce using rule 26 (factor -> MINUS factor .)
+    TIMES           reduce using rule 26 (factor -> MINUS factor .)
+    MINUS           reduce using rule 26 (factor -> MINUS factor .)
+    PLUS            reduce using rule 26 (factor -> MINUS factor .)
+    ;               reduce using rule 26 (factor -> MINUS factor .)
+    $end            reduce using rule 26 (factor -> MINUS factor .)
+    RPAREN          reduce using rule 26 (factor -> MINUS factor .)
+    ,               reduce using rule 26 (factor -> MINUS factor .)
+    RSQB            reduce using rule 26 (factor -> MINUS factor .)
+
+
+state 43
+
+    (31) array -> LSQB elements . RSQB
+    RSQB            shift and go to state 59
+
+
+state 44
+
+    (32) elements -> value . , elements
+    (33) elements -> value .
+    (18) value -> value . MINUS term
+    (19) value -> value . PLUS term
+    ,               shift and go to state 51
+    RSQB            reduce using rule 33 (elements -> value .)
+    RPAREN          reduce using rule 33 (elements -> value .)
+    MINUS           shift and go to state 30
+    PLUS            shift and go to state 31
+
+
+state 45
+
+    (3) statements -> statement ; statements .
+    $end            reduce using rule 3 (statements -> statement ; statements .)
+
+
+state 46
+
+    (10) statement -> ID ASSIGN value .
+    (18) value -> value . MINUS term
+    (19) value -> value . PLUS term
+    ;               reduce using rule 10 (statement -> ID ASSIGN value .)
+    $end            reduce using rule 10 (statement -> ID ASSIGN value .)
+    MINUS           shift and go to state 30
+    PLUS            shift and go to state 31
+
+
+state 47
+
+    (18) value -> value MINUS term .
+    (28) term -> term . DIVIDE factor
+    (29) term -> term . MATMUL factor
+    (30) term -> term . TIMES factor
+    MINUS           reduce using rule 18 (value -> value MINUS term .)
+    PLUS            reduce using rule 18 (value -> value MINUS term .)
+    ;               reduce using rule 18 (value -> value MINUS term .)
+    $end            reduce using rule 18 (value -> value MINUS term .)
+    RPAREN          reduce using rule 18 (value -> value MINUS term .)
+    ,               reduce using rule 18 (value -> value MINUS term .)
+    RSQB            reduce using rule 18 (value -> value MINUS term .)
+    DIVIDE          shift and go to state 39
+    MATMUL          shift and go to state 40
+    TIMES           shift and go to state 41
+
+
+state 48
+
+    (19) value -> value PLUS term .
+    (28) term -> term . DIVIDE factor
+    (29) term -> term . MATMUL factor
+    (30) term -> term . TIMES factor
+    MINUS           reduce using rule 19 (value -> value PLUS term .)
+    PLUS            reduce using rule 19 (value -> value PLUS term .)
+    ;               reduce using rule 19 (value -> value PLUS term .)
+    $end            reduce using rule 19 (value -> value PLUS term .)
+    RPAREN          reduce using rule 19 (value -> value PLUS term .)
+    ,               reduce using rule 19 (value -> value PLUS term .)
+    RSQB            reduce using rule 19 (value -> value PLUS term .)
+    DIVIDE          shift and go to state 39
+    MATMUL          shift and go to state 40
+    TIMES           shift and go to state 41
+
+
+state 49
+
+    (13) value -> FLOAT LPAREN value . RPAREN
+    (18) value -> value . MINUS term
+    (19) value -> value . PLUS term
+    RPAREN          shift and go to state 60
+    MINUS           shift and go to state 30
+    PLUS            shift and go to state 31
+
+
+state 50
+
+    (23) factor -> LPAREN value RPAREN .
+    DIVIDE          reduce using rule 23 (factor -> LPAREN value RPAREN .)
+    MATMUL          reduce using rule 23 (factor -> LPAREN value RPAREN .)
+    TIMES           reduce using rule 23 (factor -> LPAREN value RPAREN .)
+    MINUS           reduce using rule 23 (factor -> LPAREN value RPAREN .)
+    PLUS            reduce using rule 23 (factor -> LPAREN value RPAREN .)
+    ;               reduce using rule 23 (factor -> LPAREN value RPAREN .)
+    $end            reduce using rule 23 (factor -> LPAREN value RPAREN .)
+    RPAREN          reduce using rule 23 (factor -> LPAREN value RPAREN .)
+    ,               reduce using rule 23 (factor -> LPAREN value RPAREN .)
+    RSQB            reduce using rule 23 (factor -> LPAREN value RPAREN .)
+
+
+state 51
+
+    (32) elements -> value , . elements
+    (32) elements -> . value , elements
+    (33) elements -> . value
+    (13) value -> . FLOAT LPAREN value RPAREN
+    (14) value -> . INTEGER LPAREN value RPAREN
+    (15) value -> . TYPE LPAREN value RPAREN
+    (16) value -> . READ
+    (17) value -> . term
+    (18) value -> . value MINUS term
+    (19) value -> . value PLUS term
+    (27) term -> . factor
+    (28) term -> . term DIVIDE factor
+    (29) term -> . term MATMUL factor
+    (30) term -> . term TIMES factor
+    (20) factor -> . vector
+    (21) factor -> . array
+    (22) factor -> . ID
+    (23) factor -> . LPAREN value RPAREN
+    (24) factor -> . STRLT
+    (25) factor -> . NUMBER
+    (26) factor -> . MINUS factor
+    (34) vector -> . LPAREN empty RPAREN
+    (35) vector -> . LPAREN elements RPAREN
+    (31) array -> . LSQB elements RSQB
+    FLOAT           shift and go to state 13
+    INTEGER         shift and go to state 15
+    TYPE            shift and go to state 16
+    READ            shift and go to state 17
+    ID              shift and go to state 36
+    LPAREN          shift and go to state 14
+    STRLT           shift and go to state 22
+    NUMBER          shift and go to state 23
+    MINUS           shift and go to state 19
+    LSQB            shift and go to state 24
+
+    value                          shift and go to state 44
+    elements                       shift and go to state 61
+    term                           shift and go to state 18
+    factor                         shift and go to state 20
+    vector                         shift and go to state 6
+    array                          shift and go to state 21
+
+state 52
+
+    (34) vector -> LPAREN empty RPAREN .
+    DIVIDE          reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+    MATMUL          reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+    TIMES           reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+    MINUS           reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+    PLUS            reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+    ;               reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+    $end            reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+    RPAREN          reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+    ,               reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+    RSQB            reduce using rule 34 (vector -> LPAREN empty RPAREN .)
+
+
+state 53
+
+    (35) vector -> LPAREN elements RPAREN .
+    DIVIDE          reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+    MATMUL          reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+    TIMES           reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+    MINUS           reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+    PLUS            reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+    ;               reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+    $end            reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+    RPAREN          reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+    ,               reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+    RSQB            reduce using rule 35 (vector -> LPAREN elements RPAREN .)
+
+
+state 54
+
+    (14) value -> INTEGER LPAREN value . RPAREN
+    (18) value -> value . MINUS term
+    (19) value -> value . PLUS term
+    RPAREN          shift and go to state 62
+    MINUS           shift and go to state 30
+    PLUS            shift and go to state 31
+
+
+state 55
+
+    (15) value -> TYPE LPAREN value . RPAREN
+    (18) value -> value . MINUS term
+    (19) value -> value . PLUS term
+    RPAREN          shift and go to state 63
+    MINUS           shift and go to state 30
+    PLUS            shift and go to state 31
+
+
+state 56
+
+    (28) term -> term DIVIDE factor .
+    DIVIDE          reduce using rule 28 (term -> term DIVIDE factor .)
+    MATMUL          reduce using rule 28 (term -> term DIVIDE factor .)
+    TIMES           reduce using rule 28 (term -> term DIVIDE factor .)
+    MINUS           reduce using rule 28 (term -> term DIVIDE factor .)
+    PLUS            reduce using rule 28 (term -> term DIVIDE factor .)
+    ;               reduce using rule 28 (term -> term DIVIDE factor .)
+    $end            reduce using rule 28 (term -> term DIVIDE factor .)
+    RPAREN          reduce using rule 28 (term -> term DIVIDE factor .)
+    ,               reduce using rule 28 (term -> term DIVIDE factor .)
+    RSQB            reduce using rule 28 (term -> term DIVIDE factor .)
+
+
+state 57
+
+    (29) term -> term MATMUL factor .
+    DIVIDE          reduce using rule 29 (term -> term MATMUL factor .)
+    MATMUL          reduce using rule 29 (term -> term MATMUL factor .)
+    TIMES           reduce using rule 29 (term -> term MATMUL factor .)
+    MINUS           reduce using rule 29 (term -> term MATMUL factor .)
+    PLUS            reduce using rule 29 (term -> term MATMUL factor .)
+    ;               reduce using rule 29 (term -> term MATMUL factor .)
+    $end            reduce using rule 29 (term -> term MATMUL factor .)
+    RPAREN          reduce using rule 29 (term -> term MATMUL factor .)
+    ,               reduce using rule 29 (term -> term MATMUL factor .)
+    RSQB            reduce using rule 29 (term -> term MATMUL factor .)
+
+
+state 58
+
+    (30) term -> term TIMES factor .
+    DIVIDE          reduce using rule 30 (term -> term TIMES factor .)
+    MATMUL          reduce using rule 30 (term -> term TIMES factor .)
+    TIMES           reduce using rule 30 (term -> term TIMES factor .)
+    MINUS           reduce using rule 30 (term -> term TIMES factor .)
+    PLUS            reduce using rule 30 (term -> term TIMES factor .)
+    ;               reduce using rule 30 (term -> term TIMES factor .)
+    $end            reduce using rule 30 (term -> term TIMES factor .)
+    RPAREN          reduce using rule 30 (term -> term TIMES factor .)
+    ,               reduce using rule 30 (term -> term TIMES factor .)
+    RSQB            reduce using rule 30 (term -> term TIMES factor .)
+
+
+state 59
+
+    (31) array -> LSQB elements RSQB .
+    DIVIDE          reduce using rule 31 (array -> LSQB elements RSQB .)
+    MATMUL          reduce using rule 31 (array -> LSQB elements RSQB .)
+    TIMES           reduce using rule 31 (array -> LSQB elements RSQB .)
+    MINUS           reduce using rule 31 (array -> LSQB elements RSQB .)
+    PLUS            reduce using rule 31 (array -> LSQB elements RSQB .)
+    ;               reduce using rule 31 (array -> LSQB elements RSQB .)
+    $end            reduce using rule 31 (array -> LSQB elements RSQB .)
+    RPAREN          reduce using rule 31 (array -> LSQB elements RSQB .)
+    ,               reduce using rule 31 (array -> LSQB elements RSQB .)
+    RSQB            reduce using rule 31 (array -> LSQB elements RSQB .)
+
+
+state 60
+
+    (13) value -> FLOAT LPAREN value RPAREN .
+    MINUS           reduce using rule 13 (value -> FLOAT LPAREN value RPAREN .)
+    PLUS            reduce using rule 13 (value -> FLOAT LPAREN value RPAREN .)
+    ;               reduce using rule 13 (value -> FLOAT LPAREN value RPAREN .)
+    $end            reduce using rule 13 (value -> FLOAT LPAREN value RPAREN .)
+    RPAREN          reduce using rule 13 (value -> FLOAT LPAREN value RPAREN .)
+    ,               reduce using rule 13 (value -> FLOAT LPAREN value RPAREN .)
+    RSQB            reduce using rule 13 (value -> FLOAT LPAREN value RPAREN .)
+
+
+state 61
+
+    (32) elements -> value , elements .
+    RPAREN          reduce using rule 32 (elements -> value , elements .)
+    RSQB            reduce using rule 32 (elements -> value , elements .)
+
+
+state 62
+
+    (14) value -> INTEGER LPAREN value RPAREN .
+    MINUS           reduce using rule 14 (value -> INTEGER LPAREN value RPAREN .)
+    PLUS            reduce using rule 14 (value -> INTEGER LPAREN value RPAREN .)
+    ;               reduce using rule 14 (value -> INTEGER LPAREN value RPAREN .)
+    $end            reduce using rule 14 (value -> INTEGER LPAREN value RPAREN .)
+    RPAREN          reduce using rule 14 (value -> INTEGER LPAREN value RPAREN .)
+    ,               reduce using rule 14 (value -> INTEGER LPAREN value RPAREN .)
+    RSQB            reduce using rule 14 (value -> INTEGER LPAREN value RPAREN .)
+
+
+state 63
+
+    (15) value -> TYPE LPAREN value RPAREN .
+    MINUS           reduce using rule 15 (value -> TYPE LPAREN value RPAREN .)
+    PLUS            reduce using rule 15 (value -> TYPE LPAREN value RPAREN .)
+    ;               reduce using rule 15 (value -> TYPE LPAREN value RPAREN .)
+    $end            reduce using rule 15 (value -> TYPE LPAREN value RPAREN .)
+    RPAREN          reduce using rule 15 (value -> TYPE LPAREN value RPAREN .)
+    ,               reduce using rule 15 (value -> TYPE LPAREN value RPAREN .)
+    RSQB            reduce using rule 15 (value -> TYPE LPAREN value RPAREN .)
+
+
+Conflicts:
+
+shift/reduce conflict for RPAREN in state 33 resolved as shift

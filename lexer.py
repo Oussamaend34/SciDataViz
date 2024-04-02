@@ -2,9 +2,14 @@ from sly import Lexer
 
 class CalcLexer(Lexer):
     # Set of token names.   This is always required
-    tokens = { NUMBER, ID,
-                PLUS, MINUS, TIMES, DIVIDE, ASSIGN,
-                LPAREN , RPAREN, STRLT, QUIT, CLEAR, LSQB, RSQB, LS, MATMUL }
+    tokens = {  
+                NUMBER, ID, STRLT,
+                PLUS, MINUS, TIMES, DIVIDE, MATMUL, ASSIGN, 
+                LPAREN , RPAREN, LSQB, RSQB, PIPE,
+                WRITE, READ,
+                QUIT, CLEAR, LS,
+                TYPE, INTEGER, FLOAT, STRING, ARRAY, VECTOR
+            }
 
 
     literals = { '{', '}', ';' , ','}
@@ -23,6 +28,7 @@ class CalcLexer(Lexer):
     LSQB    = r'\['
     RSQB    = r'\]'
     MATMUL  = r'@'
+    PIPE    = r'\|'
 
     @_(r"\d+\.\d*", r'\d+')
     def NUMBER(self, t):
@@ -38,9 +44,17 @@ class CalcLexer(Lexer):
 
     # Identifiers and keywords
     ID = r'[a-zA-Z_][a-zA-Z0-9_]*'
-    ID['quit']  = QUIT
-    ID['clear'] = CLEAR
-    ID['ls']    = LS
+    ID['quit']      = QUIT
+    ID['clear']     = CLEAR
+    ID['ls']        = LS
+    ID['write']     = WRITE
+    ID['read']      = READ
+    ID['type']      = TYPE
+    ID['float']     = FLOAT
+    ID['integer']    = INTEGER
+    ID['string']    = STRING 
+    ID['array']      = ARRAY
+    ID['vector']    = VECTOR
 
     ignore_comment = r'\#.*'
 
