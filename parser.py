@@ -1,5 +1,6 @@
 from sly import Parser
 from lexer import CalcLexer
+from func import BuitInFunc
 import numpy as np
 import os
 import sys
@@ -12,9 +13,9 @@ class TypError(Exception):
 class CalcParser(Parser):
     # Get the token list from the lexer (required)
     precedence = (
-        ('left', ASSIGN),
+        ('nonassoc', ASSIGN),
         ('left', PLUS, MINUS),
-        ('left', TIMES, DIVIDE),
+        ('left', TIMES, DIVIDE, MOD, FLRDIV),
         ('right', UMINUS),
     )
     debugfile = 'debug.txt'
@@ -67,7 +68,6 @@ class CalcParser(Parser):
             return p.term * p.factor
         return TypeError("Must be from the same type")
 
-
     @_('term MATMUL factor')
     def term(self, p):
         if isinstance(p.term, np.ndarray) and isinstance(p.factor, np.ndarray):
@@ -80,6 +80,11 @@ class CalcParser(Parser):
             print('You can only do matrix maltiplication between two arrays')
             return None
 
+    @_('term MOD factor')
+    def term(self, p):
+        if self.areDigits(p.term, p.factor):
+            return p.term % p.factor
+        return TypeError("Must between two numbers")
 
     @_('term DIVIDE factor')
     def term(self, p):
@@ -87,6 +92,11 @@ class CalcParser(Parser):
             return p.term / p.factor
         return TypeError("Must be from the same type")
 
+    @_('term FLRDIV factor')
+    def term(self, p):
+        if self.areDigits(p.term, p.factor):
+            return p.term // p.factor
+        return TypeError("Must be from the same type")
 
     @_('factor')
     def term(self, p):
@@ -106,10 +116,7 @@ class CalcParser(Parser):
     
     @_('ID ASSIGN value')
     def statement(self, p):
-        if(type(p.value) == list):
-            self.values[p.ID] = np.array(p.value)
-        else:
-            self.values[p.ID] = p.value
+        self.values[p.ID] = p.value
         return p.value
     @_('ID')
     def factor(self, p):
@@ -121,7 +128,10 @@ class CalcParser(Parser):
     
     @_('LSQB elements RSQB')
     def array(self, p):
-        return p.elements
+        return np.array(p.elements)
+    @_('empty')
+    def elements(self, p):
+        return []
     @_('value')
     def elements(self, p):
         return [p.value]
@@ -147,10 +157,7 @@ class CalcParser(Parser):
     @_('LPAREN elements RPAREN')
     def vector(self, p):
         return tuple(p.elements)
-
-    @_('LPAREN empty RPAREN')
-    def vector(self, p):
-        return tuple([])
+    
     def getValue(self, index):
         try:
             return self.values[index]
@@ -164,46 +171,108 @@ class CalcParser(Parser):
             return False
         
 
+
+    def isiterable(self, value1):
+        if (type(value1) in (tuple,np.ndarray, str)):
+            return True
+        else:
+            return False
+        
+
     @_('ID vector')
     def func(self, p):
-        print(p.ID,": ", type(p.ID), p.vector, ":", type(p.vector))
-        return None
+        f = BuitInFunc(p.ID,p.vector)
+        return f
+    
     @_('func')
-    def statement(self, p):
-        return None
-    @_('WRITE vector')
-    def statement(self,p):
-        for i in p.vector:
-            print(i, end=" ")
-        print()
-        return None
+    def factor(self, p):
+        return p.func.exec()
     @_('READ')
     def value(self,p):
         return input()
+    
+    @_('value PIPE func')
+    def value(self, p):
+        p.func.addArgument(p.value)
+        return p.func.exec()
+    
+    @_('json')
+    def value(self, p):
+        return p.json
+    @_('LQB members RQB')
+    def json(self, p):
+        return {key: value for key, value in p.members}
 
-    @_('TYPE LPAREN value RPAREN')
+    @_('pair')
+    def members(self, p):
+        return [p.pair]
+
+    @_('pair "," members')
+    def members(self, p):
+        return [p.pair] + p.members
+    
+    @_('value ":" value')
+    def pair(self, p):
+        if isinstance(p.value0, (dict, np.ndarray)):
+            value0 = tuple(p.value0)
+        else:
+            value0 = p.value0
+        if isinstance(p.value1, (dict, np.ndarray)):
+            value1 = tuple(p.value1)
+        else:
+            value1 = p.value1
+        return value0, value1
+    
+    @_('value LSQB value RSQB')
+    def value(self,p):
+        if self.isiterable(p.value0):
+            lenght = len(self.value0)
+            if p.value1 in range(-lenght, lenght):
+                return p.value0[p.value1]
+            else:
+                print(f"IndexError: {self.dataTypes[type(p.value0)]} Index out of range")
+        elif isinstance(p.value0,dict):
+            if p.value1 in p.value0:
+                return p.value0[p.value1]
+            else:
+                print(f"KeyError: {p.value1}")
+        else:
+            print(f"TypeError: {self.dataTypes[type(p.value0)]} not subscriptable")
+    
+    @_('value LSQB value ":" value RSQB')
+    def value(self,p):
+        if self.isiterable(p.value0):
+            return p.value0[p.value1 : p.value2]
+        else:
+            print(f"TypeError: {self.dataTypes[type(p.value0)]} not subscriptable")
+
+    @_('value LSQB value RSQB ASSIGN value')
+    def value(self,p):
+        if self.isiterable(p.value0):
+            lenght = len(p.value0)
+            if p.value1 in range(-lenght, lenght):
+                p.value0[p.value1] = p.value2
+                return p.value0[p.value1]
+            else:
+                print(f"IndexError: {self.dataTypes[type(p.value0)]} Index out of range")
+        elif isinstance(p.value0,dict):
+            p.value0[p.value1] = p.value2
+            return p.value0[p.value1]
+        else:
+            print(f"TypeError: {self.dataTypes[type(p.value0)]} not subscriptable")
+
+    @_('FALSE')
     def value(self, p):
-        return self.dataTypes[type(p.value)]
-    @_('INTEGER LPAREN value RPAREN')
-    def value(self, p):
-        return int(p.value)
-    @_('FLOAT LPAREN value RPAREN')
-    def value(self, p):
-        return float(p.value)
-    @_('STRING LPAREN value RPAREN')
-    def value(self, p):
-        return str(p.value)
-    @_('VECTOR LPAREN value RPAREN')
-    def value(self, p):
-        return tuple(p.value)
-    @_('ARRAY LPAREN value RPAREN')
-    def value(self, p):
-        return np.array(p.value)
+        return False
+    
+    @_('TRUE')
+    def value(self,p):
+        return True
 
 if __name__ == '__main__':
     lexer = CalcLexer()
     parser = CalcParser()
-
+    # os.system('clear')
     while True:
         try:
             text = input('SciDataViz > ')
