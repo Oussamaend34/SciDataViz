@@ -26,6 +26,8 @@ class BuitInFunc:
                 return True if len(self.arguments) == 1 else False
             case "vector":
                 return True if len(self.arguments) == 1 else False
+            case "bool":
+                return True if len(self.arguments) == 1 else False
             case "len":
                 return True if len(self.arguments) == 1 else False
             case _ :
@@ -55,6 +57,8 @@ class BuitInFunc:
                     return tuple(self.arguments[0])
                 case "len":
                     return len(self.arguments[0])
+                case "bool":
+                    return bool(self.arguments[0])
                 case "write":
                     for argument in self.arguments:
                         print(argument, end= " ")

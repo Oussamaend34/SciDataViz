@@ -5,7 +5,6 @@ class CalcLexer(Lexer):
     tokens = {  
                 NUMBER, ID, STRLT, TRUE, FALSE,
                 PLUS, MINUS, TIMES, DIVIDE, FLRDIV, MOD, MATMUL, ASSIGN,
-
                 LPAREN , RPAREN, LSQB, RSQB, LQB, RQB, PIPE,
                 READ, QUIT, CLEAR, LS
             }
