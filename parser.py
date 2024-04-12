@@ -2,6 +2,7 @@ from sly import Parser
 from lexer import CalcLexer
 from func import BuitInFunc
 import numpy as np
+import pandas as pd
 import os
 import sys
 import pickle
@@ -226,16 +227,21 @@ class CalcParser(Parser):
     @_('value LSQB value RSQB')
     def value(self,p):
         if self.isiterable(p.value0):
-            lenght = len(self.value0)
+            lenght = len(p.value0)
             if p.value1 in range(-lenght, lenght):
                 return p.value0[p.value1]
             else:
                 print(f"IndexError: {self.dataTypes[type(p.value0)]} Index out of range")
-        elif isinstance(p.value0,dict):
+        elif isinstance(p.value0,(dict)):
             if p.value1 in p.value0:
                 return p.value0[p.value1]
             else:
                 print(f"KeyError: {p.value1}")
+        elif isinstance(p.value0,(pd.DataFrame)):
+            if isinstance(p.value1, np.ndarray):
+                return p.value0[p.value1]
+            else:
+                return p.value0[[p.value1]]
         else:
             print(f"TypeError: {self.dataTypes[type(p.value0)]} not subscriptable")
     

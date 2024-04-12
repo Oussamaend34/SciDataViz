@@ -2,7 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
-test.py
+_test.py
+bricks.csv
+bricks copy.csv
+heartPTD.xlsx
+fromage.txt
 # C extensions
 *.so
 

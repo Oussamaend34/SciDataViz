@@ -23,7 +23,7 @@ class CalcLexer(Lexer):
     DIVIDE  = r'/'
     MOD     = r'%'
     MATMUL  = r'@'
-    ASSIGN  = r'='
+    ASSIGN  = r'(<-|=)'
     RPAREN  = r'\)'
     LPAREN  = r'\('
     LSQB    = r'\['

@@ -1,14 +1,16 @@
 import pickle
 import numpy as np
+import pandas as pd
+import csv
 
 class Func:
     def __init__(self, name, arguments) -> None:
         self.name = name
         self.arguments = list(arguments)
-        self.instructionsf
+
 
 class BuitInFunc:
-    Functions = {"type": 1, "float": 1, "write": -1, "len": 1}
+    Functions = {"type": 1, "float": 1, "write": -1, "len": 1, "import": 1, "dataframe":1}
     def __init__(self, name, arguments) -> None:
         self.name = name
         self.arguments = list(arguments)
@@ -26,12 +28,19 @@ class BuitInFunc:
                 return True if len(self.arguments) == 1 else False
             case "vector":
                 return True if len(self.arguments) == 1 else False
+            case "dataframe":
+                return True if len(self.arguments) == 1 else False
             case "bool":
                 return True if len(self.arguments) == 1 else False
             case "len":
                 return True if len(self.arguments) == 1 else False
+            case "import":
+                return True if len(self.arguments) == 1 else False
             case _ :
                 return True
+            
+
+
     def addArgument(self, argument):
         self.arguments.insert(0,argument)
     def exec(self):
@@ -55,10 +64,14 @@ class BuitInFunc:
                     return np.array(self.arguments[0])
                 case "vector":
                     return tuple(self.arguments[0])
+                case "dataframe":
+                    return pd.DataFrame(self.arguments[0])
                 case "len":
                     return len(self.arguments[0])
                 case "bool":
                     return bool(self.arguments[0])
+                case "import":
+                    return read(self.arguments[0])
                 case "write":
                     for argument in self.arguments:
                         print(argument, end= " ")
@@ -75,6 +88,26 @@ class BuitInFunc:
 
 
 
+
+def read_csv(filename):
+    with open(filename, newline='') as csvfile:
+        dialect = csv.Sniffer().sniff(csvfile.readline(), delimiters=';,|#\t')
+        csvfile.seek(0)
+        header  = csv.Sniffer().has_header(csvfile.readline())
+    if header:
+        return pd.read_csv(filename, sep=dialect.delimiter, header=0)
+    else:
+        return pd.read_csv(filename, sep=dialect.delimiter)
+def read(filename):
+    functions = [read_csv, pd.read_excel, pd.read_json]
+    for f in functions:
+        try:
+            return f(filename)
+            break
+        except:
+            pass
+    print("Error reading file.")
+    return None
 
 
 
