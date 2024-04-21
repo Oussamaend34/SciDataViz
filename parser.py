@@ -1,17 +1,17 @@
 from sly import Parser
-from lexer import CalcLexer
+from lexer import SciDataVizLexer
 from func import BuitInFunc
+from error import Error
 import numpy as np
+import numpy.core._exceptions as np_exceptions
 import pandas as pd
 import os
 import sys
 import pickle
 
 
-class TypError(Exception):
-    pass
 
-class CalcParser(Parser):
+class SciDataVizParser(Parser):
     # Get the token list from the lexer (required)
     precedence = (
         ('nonassoc', ASSIGN),
@@ -19,14 +19,29 @@ class CalcParser(Parser):
         ('left', TIMES, DIVIDE, MOD, FLRDIV),
         ('right', UMINUS),
     )
-    debugfile = 'debug.txt'
-    tokens = CalcLexer.tokens
+    # debugfile = 'debug.txt'
+    tokens = SciDataVizLexer.tokens
 
-    def __init__(self) -> None:
-        self.values = {}
+    def __init__(self, terminal) -> None:
+        self.values = {"i":complex(0,1), "j": complex(0,1), "e":np.e, "pi":np.pi, "nan":np.nan, "inf":np.inf, "True":True, "False":False}
         with open('primitiveDataTypes.pickle', 'rb') as f:
             self.dataTypes = pickle.load(f)
+        self.terminal = terminal
 
+    def error(self, token):
+        '''
+        Default error handling function.  This may be subclassed.
+        '''
+        err = Error("SyntaxError")
+        if token:
+            lineno = getattr(token, 'lineno', 0)
+            if lineno:
+                err.message = f"line {lineno} at '{token.value}'"
+            else:
+                err.message = f"'{token.value}'"
+        else:
+            err.message = 'at EOF'
+        self.terminal.insert("end",f'\n{err}')
     # Grammar rules and actions
     @_('statements')
     def s(self, p):
@@ -48,16 +63,33 @@ class CalcParser(Parser):
         pass
     @_('value PLUS term')
     def value(self, p):
-        return p.value + p.term
-
+        if isinstance(p.value, Error):
+            return p.value
+        if isinstance(p.term, Error):
+            return p.term
+        try:
+            return np.add(p.value, p.term)
+        except (ValueError,np_exceptions.UFuncTypeError, TypeError) as e:
+            if isinstance(e,ValueError):
+                return Error("ValueError", "Matrices are not aligned")
+            elif isinstance(e,TypeError):
+                return Error("TypeError", f"You can't add a {self.dataTypes[type(p.value)]} and a {self.dataTypes[type(p.term)]}")
+            elif isinstance(e,np_exceptions.UFuncTypeError):
+                return Error("TypeError", "You can only do element wise addition between two arrays of the same data type")
     @_('value MINUS term')
     def value(self, p):
+        if isinstance(p.value, Error):
+            return p.value
+        if isinstance(p.term, Error):
+            return p.term
         if self.areDigits(p.value, p.term):
             return p.value - p.term
-        return TypeError("Must be from the same type")
+        return Error("TypeError", "Must be from the same type")
 
     @_('MINUS factor %prec UMINUS')
     def factor(self, p):
+        if isinstance(p.factor, Error):
+            return p.factor
         return -p.factor
     @_('term')
     def value(self, p):
@@ -65,36 +97,78 @@ class CalcParser(Parser):
 
     @_('term TIMES factor')
     def term(self, p):
+        if isinstance(p.term, Error):
+            return p.term
+        if isinstance(p.factor, Error):
+            return p.factor
         if self.areDigits(p.term, p.factor):
             return p.term * p.factor
-        return TypeError("Must be from the same type")
+        if isinstance(p.term, np.ndarray) and isinstance(p.factor, np.ndarray):
+            if p.term.dtype == p.factor.dtype:
+                try:
+                    return np.multiply(p.term, p.factor)
+                except ValueError:
+                    return Error("ValueError", "Matrices are not aligned")
+            else:
+                return Error("TypeError", "You can only do element wise multiplication between two arrays of the same data type")
+        try:
+            return np.multiply(p.term, p.factor)
+        
+        except ValueError:
+            return Error("TypeError", f"Multiplication between {self.dataTypes[type(p.term)]} and {self.dataTypes[type(p.factor)]} is not allowed")
 
     @_('term MATMUL factor')
     def term(self, p):
+        if isinstance(p.term, Error):
+            return p.term
+        if isinstance(p.factor, Error):
+            return p.factor
         if isinstance(p.term, np.ndarray) and isinstance(p.factor, np.ndarray):
             try:
                 return np.matmul(p.term, p.factor)
             except ValueError:
-                print("you can't do this multiplication")
-                return None
+                return Error("ValueError", "Matrices are not aligned")
         else:
-            print('You can only do matrix maltiplication between two arrays')
-            return None
+            return Error("TypeError", "You can only do matrix maltiplication between two arrays")
 
     @_('term MOD factor')
     def term(self, p):
+        if isinstance(p.term, Error):
+            return p.term
+        if isinstance(p.factor, Error):
+            return p.factor
         if self.areDigits(p.term, p.factor):
             return p.term % p.factor
         return TypeError("Must between two numbers")
 
     @_('term DIVIDE factor')
     def term(self, p):
+        if isinstance(p.term, Error):
+            return p.term
+        if isinstance(p.factor, Error):
+            return p.factor
         if self.areDigits(p.term, p.factor):
             return p.term / p.factor
-        return TypeError("Must be from the same type")
+        if isinstance(p.term, np.ndarray) and isinstance(p.factor, np.ndarray):
+            if p.term.dtype == p.factor.dtype:
+                try:
+                    return np.divide(p.term, p.factor)
+                except ValueError:
+                    return Error("ValueError", "Matrices are not aligned")
+            else:
+                return Error("TypeError", "You can only do element wise multiplication between two arrays of the same data type")
+        try:
+            return np.divide(p.term, p.factor)
+        
+        except ValueError:
+            return Error("TypeError", f"Multiplication between {self.dataTypes[type(p.term)]} and {self.dataTypes[type(p.factor)]} is not allowed")
 
     @_('term FLRDIV factor')
     def term(self, p):
+        if isinstance(p.term, Error):
+            return p.term
+        if isinstance(p.factor, Error):
+            return p.factor
         if self.areDigits(p.term, p.factor):
             return p.term // p.factor
         return TypeError("Must be from the same type")
@@ -117,8 +191,11 @@ class CalcParser(Parser):
     
     @_('ID ASSIGN value')
     def statement(self, p):
-        self.values[p.ID] = p.value
-        return p.value
+        if isinstance(p.value, Error):
+            return p.value
+        else:
+            self.values[p.ID] = p.value
+            return None
     @_('ID')
     def factor(self, p):
         return self.getValue(p.ID)
@@ -145,11 +222,18 @@ class CalcParser(Parser):
         sys.exit()
     @_('CLEAR')
     def statement(self, p):
-        os.system('clear')
+        self.terminal.delete("1.0","end")
         return None
     @_('LS')
     def statement(self, p):
-        print(self.values)
+        if(len(self.values) == 0):
+            print("No variables declared")
+        else:
+            for variable, value in self.values.items():
+                print(variable, end="")
+                s = str(value)
+                for line in s.splitlines():
+                    print(f"\t{line}")
         return None
     
     @_('vector')
@@ -163,10 +247,9 @@ class CalcParser(Parser):
         try:
             return self.values[index]
         except KeyError:
-            print(f"variable {index} have no value")
-            return None
+            return Error("NameError", f"variable {index} have no value")
     def areDigits(self, value1, value2):
-        if(type(value1) in [float, int] and type(value2) in [float, int]):
+        if(type(value1) in [float, int, complex] and type(value2) in [float, int, complex]):
             return True
         else:
             return False
@@ -182,11 +265,16 @@ class CalcParser(Parser):
 
     @_('ID vector')
     def func(self, p):
-        f = BuitInFunc(p.ID,p.vector)
-        return f
+        if p.ID in BuitInFunc.Functions:
+            f = BuitInFunc(p.ID,p.vector)
+            return f
+        else:
+            return Error("NameError", f"Function {p.ID} not found")
     
     @_('func')
     def factor(self, p):
+        if isinstance(p.func, Error):
+            return p.func
         return p.func.exec()
     @_('READ')
     def value(self,p):
@@ -194,6 +282,10 @@ class CalcParser(Parser):
     
     @_('value PIPE func')
     def value(self, p):
+        if isinstance(p.value, Error):
+            return p.value
+        if isinstance(p.func, Error):
+            return p.func
         p.func.addArgument(p.value)
         return p.func.exec()
     
@@ -202,18 +294,30 @@ class CalcParser(Parser):
         return p.json
     @_('LQB members RQB')
     def json(self, p):
+        if isinstance(p.members, Error):
+            return p.members
         return {key: value for key, value in p.members}
 
     @_('pair')
     def members(self, p):
+        if isinstance(p.pair, Error):
+            return p.pair
         return [p.pair]
 
     @_('pair "," members')
     def members(self, p):
+        if isinstance(p.pair, Error):
+            return p.pair
+        if isinstance(p.members, Error):
+            return p.members
         return [p.pair] + p.members
     
     @_('value ":" value')
     def pair(self, p):
+        if isinstance(p.value0, Error):
+            return p.value0
+        if isinstance(p.value1, Error):
+            return p.value1
         if isinstance(p.value0, (dict, np.ndarray)):
             value0 = tuple(p.value0)
         else:
@@ -226,46 +330,59 @@ class CalcParser(Parser):
     
     @_('value LSQB value RSQB')
     def value(self,p):
+        if isinstance(p.value0, Error):
+            return p.value0
+        if isinstance(p.value1, Error):
+            return p.value1
         if self.isiterable(p.value0):
             lenght = len(p.value0)
             if p.value1 in range(-lenght, lenght):
                 return p.value0[p.value1]
             else:
-                print(f"IndexError: {self.dataTypes[type(p.value0)]} Index out of range")
+                return Error("IndexError", f"{self.dataTypes[type(p.value0)]} Index out of range")
         elif isinstance(p.value0,(dict)):
             if p.value1 in p.value0:
                 return p.value0[p.value1]
             else:
-                print(f"KeyError: {p.value1}")
+                return Error("KeyError", f"KeyError: {p.value1}")
         elif isinstance(p.value0,(pd.DataFrame)):
-            if isinstance(p.value1, np.ndarray):
-                return p.value0[p.value1]
-            else:
-                return p.value0[[p.value1]]
+            return p.value0[p.value1]
         else:
-            print(f"TypeError: {self.dataTypes[type(p.value0)]} not subscriptable")
+            return Error("TypeError", f"{self.dataTypes[type(p.value0)]} not subscriptable")
     
     @_('value LSQB value ":" value RSQB')
     def value(self,p):
+        if isinstance(p.value0, Error):
+            return p.value0
+        if isinstance(p.value1, Error):
+            return p.value1
+        if isinstance(p.value2, Error):
+            return p.value2
         if self.isiterable(p.value0):
             return p.value0[p.value1 : p.value2]
         else:
-            print(f"TypeError: {self.dataTypes[type(p.value0)]} not subscriptable")
+            return Error("TypeError", f"{self.dataTypes[type(p.value0)]} not subscriptable")
 
     @_('value LSQB value RSQB ASSIGN value')
     def value(self,p):
+        if isinstance(p.value0, Error):
+            return p.value0
+        if isinstance(p.value1, Error):
+            return p.value1
+        if isinstance(p.value2, Error):
+            return p.value2
         if self.isiterable(p.value0):
             lenght = len(p.value0)
             if p.value1 in range(-lenght, lenght):
                 p.value0[p.value1] = p.value2
                 return p.value0[p.value1]
             else:
-                print(f"IndexError: {self.dataTypes[type(p.value0)]} Index out of range")
+                return Error("IndexError", f"{self.dataTypes[type(p.value0)]} Index out of range")
         elif isinstance(p.value0,dict):
             p.value0[p.value1] = p.value2
             return p.value0[p.value1]
         else:
-            print(f"TypeError: {self.dataTypes[type(p.value0)]} not subscriptable")
+            return Error("TypeError", f"{self.dataTypes[type(p.value0)]} not subscriptable")
 
     @_('FALSE')
     def value(self, p):
@@ -276,8 +393,8 @@ class CalcParser(Parser):
         return True
 
 if __name__ == '__main__':
-    lexer = CalcLexer()
-    parser = CalcParser()
+    lexer = SciDataVizLexer()
+    parser = SciDataVizParser()
     # os.system('clear')
     while True:
         try:

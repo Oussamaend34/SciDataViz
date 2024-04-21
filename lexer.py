@@ -1,6 +1,6 @@
 from sly import Lexer
 
-class CalcLexer(Lexer):
+class SciDataVizLexer(Lexer):
     # Set of token names.   This is always required
     tokens = {  
                 NUMBER, ID, STRLT, TRUE, FALSE,
@@ -68,6 +68,6 @@ if __name__ == '__main__':
     data = '''
 {'A' : 1 , 'B' : 2 }
 '''
-    lexer = CalcLexer()
+    lexer = SciDataVizLexer()
     for tok in lexer.tokenize(data):
         print(tok)
