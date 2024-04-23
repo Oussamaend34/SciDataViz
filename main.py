@@ -1,104 +1,147 @@
 import ttkbootstrap as tb
+from ttkbootstrap.constants import *
 import tkinter as tk
 from parser import SciDataVizParser
 from lexer import SciDataVizLexer
+from view_table import TableView
+from Terminal import Terminal
+from Text_editor import Texteditor
+from tkinter import filedialog
+from tkinter import messagebox
+import re
+import os
 
-
-class Terminal():
-    def __init__(self, root) -> None:
-        self.terminal = tk.Text(root)
-        self.scrollbar = tb.Scrollbar(root, orient=tk.VERTICAL, bootstyle = 'danger-round')
-        self.scrollbar.config(command=self.terminal.yview)
-        self.terminal.config(yscrollcommand=self.scrollbar.set)
-        self.stack = []
-        self.stackindex = 0
-        self.lexer = SciDataVizLexer()
-        self.parser = SciDataVizParser(self.terminal)
-        self.printbasename()
+class mainApp():
+    def __init__(self) -> None:
+        self.root =  tb.Window(themename='superhero', title='SciDataViz Terminal')
+        self.root.geometry('800x600')
+        self.defaultnotebookFrameDisplayed = True
+        self.textareas = []
+        self.createWidgets()
         self.bindKeys()
 
-    def printbasename(self):
-        self.terminal.insert("end", "SciDataViz>")
-
-    def onReturn(self, event):
-        command = self.terminal.get("1.0","end").splitlines()[-1].strip()
-        command = command[11:]
-        if len(self.stack) == 0:
-            self.stack.insert(0,command)
-        elif len(self.stack) >=1 and command != self.stack[0]:
-            self.stack.insert(0,command)
-        self.index = 0
-        if command != '':
-            result = self.parser.parse(self.lexer.tokenize(command))
-            if not isinstance(result,type(None)):
-                self.terminal.insert("end",f"\n{result}")
-        if command != 'clear':
-            self.terminal.insert("end", "\n")
-        self.printbasename()
-        self.terminal.mark_set("insert", 'end')
-        self.terminal.see("end")
-        return "break"
-    def onBackspace(self,event):
-        end_index = self.terminal.index("end-1c")
-        last_line = end_index.split(".")[0]
-        start_end_line = f"{last_line}.0"
-        end_end_line = f"{last_line}.end"
-        text = self.terminal.get(start_end_line, end_end_line)
-        if text == "SciDataViz>":
-            return "break"
-        selection = self.terminal.tag_ranges(tk.SEL)
-        if selection:
-            return "break"
-    def onClick(self,event):
-        self.terminal.focus_set()
-        return "break"
-    def onArrowUp(self,event):
-        end_index = self.terminal.index("end-1c")
-        last_line = end_index.split(".")[0]
-        start_end_line = f"{last_line}.11"
-        end_end_line = f"{last_line}.end"
-        self.terminal.delete(start_end_line, end_end_line)
-        try:
-            self.terminal.insert("end",f"{self.stack[self.index]}")
-            self.index += 1
-        except:
-            pass
-        return "break"
-    def onArrowDown(self, event):
-        end_index = self.terminal.index("end-1c")
-        last_line = end_index.split(".")[0]
-        start_end_line = f"{last_line}.11"
-        end_end_line = f"{last_line}.end"
-        self.terminal.delete(start_end_line, end_end_line)
-        try:
-            self.terminal.insert("end",f"{self.stack[self.index-1]}")
-            self.index = self.index - 1
-        except:
-            pass
-        return "break"
-    def on_button_press(self, event):
-        # Store the current cursor position
-        self.cursor_position = self.terminal.index(tk.INSERT)
-    
-    def on_button_release(self, event):
-        # Restore the cursor position to the stored position
-        if self.cursor_position:
-            self.terminal.mark_set(tk.INSERT, self.cursor_position)
+    def createWidgets(self):
+        self.TerminalFrame = tb.Frame(self.root, bootstyle='danger')
+        self.notebook = tb.Notebook(self.root, height=300)
+        self.defaultnotebookFrame = self.creatnotebookFrame()
+        self.terminal = Terminal(self.TerminalFrame, self.notebook)
+        self.notebook.add(self.defaultnotebookFrame, text="Welcome")
     def bindKeys(self):
-        self.terminal.bind("<Return>", self.onReturn)
-        self.terminal.bind("<BackSpace>",self.onBackspace)
-        self.terminal.bind("<Button-1>", self.onClick)
-        self.terminal.bind("<Down>", self.onArrowDown)
-        self.terminal.bind("<Up>", self.onArrowUp)
-        self.terminal.bind('<ButtonPress-1>', self.on_button_press)
-        self.terminal.bind('<ButtonRelease-1>', self.on_button_release)
-    def pack(self):
-        self.terminal.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-root = tb.Window(themename='superhero', title='SciDataViz Terminal')
-frame = tb.Frame(root, bootstyle='danger')
-terminal = Terminal(frame)
-terminal.pack()
-frame.pack()
-root.mainloop()
+        self.root.bind("<Command-q>", self.quit)
+        self.root.bind("<Command-y>", self.removeCurrentTab)
+        self.root.bind("<Command-n>", lambda e: self.addNewTab())
+        self.root.bind("<Command-o>", lambda e: self.addNewTab(filedialog.askopenfilename()))
+        self.root.bind("<Command-s>", lambda e: self.save(e))
+        self.root.bind("<Shift-Return>", self.run)
 
+    def save(self, event):
+        current_tab = self.notebook.select()
+        current_frame:tk.Frame = self.notebook.nametowidget(current_tab)
+        if any (re.match(r"(.!notebook)?.!frame\d*.!text", child) for child in map(str, current_frame.winfo_children())):
+            for child in current_frame.winfo_children():
+                if isinstance(child, tb.Text):
+                    for texteditor in self.textareas:
+                        if texteditor.textarea == child:
+                            texteditor.save(event)
+                        self.notebook.tab(current_tab, text=os.path.basename(texteditor.file))
+
+    def run(self, event):
+        current_tab = self.notebook.select()
+        current_frame:tk.Frame = self.notebook.nametowidget(current_tab)
+        if any (re.match(r"(.!notebook)?.!frame\d*.!text", child) for child in map(str, current_frame.winfo_children())):
+            for child in current_frame.winfo_children():
+                if isinstance(child, tb.Text):
+                    for texteditor in self.textareas:
+                        if texteditor.textarea == child:
+                            text = texteditor.selectedTedxt
+                            if text:
+                                self.terminal.removeCommand()
+                                self.terminal.terminal.insert("end", f"{text}\n")
+                                commands = text.splitlines()
+                                # self.terminal.run(text)
+                                for command in commands:
+                                    self.terminal.run(command)
+                                self.terminal.printbasename()
+        return "break"
+
+    def addNewTable(self, table: TableView):
+        currentab = self.notebook.select()
+        if currentab == self.defaultnotebookFrame:
+            self.notebook.forget(currentab)
+        self.notebook.add(table.frame, text=table.name)
+    def addNewTab(self, file = None):
+        current_tab = self.notebook.select()
+        current_frame:tk.Frame = self.notebook.nametowidget(current_tab)
+        if any (re.match(r".!frame\d+.!label", child ) for child in map(str, current_frame.winfo_children())):
+            self.notebook.forget(current_tab)
+        new_tab = tb.Frame(self.notebook)
+        texteditor = Texteditor(new_tab, file)
+        self.textareas.append(texteditor)
+        if file :
+            title = os.path.basename(file)
+            with open(file, 'r') as file:
+                text = file.read()
+                texteditor.insert(text)
+        else:
+            title = "Untitled"
+        self.notebook.add(new_tab, text=title)
+        self.notebook.select(new_tab)
+    def creatnotebookFrame(self):
+        notebookFrame = tb.Frame()
+        lable = tb.Label(notebookFrame, text="To create a New Tab press Command N", bootstyle="info")
+        lable.pack(pady=20)
+        lable2 = tb.Label(notebookFrame, text="To remove the current Tab press Command O", bootstyle="info")
+        lable2.pack(pady=20)
+        return notebookFrame
+
+    def removeCurrentTab(self, event):
+        current_tab = self.notebook.select()
+        current_frame:tk.Frame = self.notebook.nametowidget(current_tab)
+        if any (re.match(r".!frame\d+.!label", child ) for child in map(str, current_frame.winfo_children())):
+            return "break"
+        if any (re.match(r"(.!notebook)?.!frame\d*.!text", child) for child in map(str, current_frame.winfo_children())):
+            response = messagebox.askyesnocancel("Save", "Do you want to save the file before closing?")
+            if response == None:
+                return "break"
+            if response == True:
+                for child in current_frame.winfo_children():
+                    if isinstance(child, tb.Text):
+                        for texteditor in self.textareas:
+                            if texteditor.textarea == child:
+                                text = texteditor.getAllText()
+                                if text:
+                                    if texteditor.file:
+                                        with open(texteditor.file, 'w') as file:
+                                            file.write(text)
+                                    else:
+                                        file_path = filedialog.asksaveasfilename(defaultextension=".txt")
+                                        if file_path:
+                                            with open(file_path, 'w') as file:
+                                                file.write(text)
+                                            texteditor.file = file_path
+                                        else:
+                                            return "break"
+        self.notebook.forget(current_tab)
+        current_tab = self.notebook.select()
+        if not current_tab:
+            self.notebook.add(self.defaultnotebookFrame, text="Welcome Again")
+            self.notebook.select(self.defaultnotebookFrame)
+        return "break"
+
+    def pack(self):
+        self.notebook.grid(row=0, column=0, sticky="nsew")
+        self.TerminalFrame.grid(row=1, column=0, sticky="nsew")
+        self.root.grid_rowconfigure(0, weight=1)
+        self.root.grid_rowconfigure(1, weight=1)
+        self.root.grid_columnconfigure(0, weight=1)
+
+    def mainloop(self):
+        self.root.mainloop()
+    def quit(self, event):
+        self.root.destroy()
+        return "break"
+
+if __name__ == "__main__":
+    app = mainApp()
+    app.pack()
+    app.mainloop()

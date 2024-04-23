@@ -2,14 +2,22 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import cmath
+from error import Error
+import numpy.core._exceptions as numpy_exceptions
 import csv
 import pickle
 np.complex128
 
 class BuitInFunc:
     
-    Functions = {"type": 1, "float": 1, "write": -1, "len": 1, "import": 1, "dataframe":1, "scatterplot":4, "linspace":3, "range":3, "vector":1, "array":1, "string":1, "integer":1, "bool":1, "log":1, "complex":2, "lineplot":3, "sqrt":1, "abs":1, "sin":1, "cos":1, "tan":1, "asin":1, "acos":1, "atan":1, "sinh":1, "cosh":1, "tanh":1, "asinh":1, "acosh":1, "atanh":1, "exp":1, "log10":1, "log2":1, "log1p":1, "expm1":1, "cbrt":1, "square":1, "deg2rad":1, "rad2deg":1, "radians":1, "degrees":1, "ceil":1, "floor":1, "trunc":1, "round":1, "isfinite":1, "isinf":1, "isnan":1, "isnat":1, "signbit":1, "copysign":2, "fabs":1, "fmod":2, "modf":1, "remainder":2, "gcd":2, "lcm":2, "add":2, "subtract":2, "multiply":2, "divide":2, "true_divide":2, "floor_divide":2, "power":2, "mod":2, "remainder":2, "divmod":2, "negative":1, "positive":1, "absolute":1, "invert":1, "left_shift":2, "right_shift":2, "and":2, "or":2, "xor":2, "logical_and":2, "logical_or":2, "logical_xor":2, "logical_not":1, "maximum":2, "minimum":2, "fmax":2, "fmin":2, "heaviside":2, "isfinite":1, "isinf":1, "isnan":1, "isnat":1, "signbit":1, "copysign":2, "fabs":1, "fmod":2, "modf":1, "remainder":2, "gcd":2, "lcm":2, "add":2, "subtract":2, "multiply":2, "divide":2, "true_divide":2, "floor_divide":2, "power":2}
+    Functions = {"type": 1, "float": 1, "write": -1, "len": 1, "import": 1, "dataframe":1, "scatterplot":4,
+                    "linspace":3, "range":3, "vector":1, "array":1, "string":1, "integer":1, "bool":1, "log":1,
+                    "complex":2, "lineplot":3, "sqrt":1, "abs":1, "sin":1, "cos":1, "tan":1, "asin":1, "acos":1,
+                    "atan":1, "sinh":1, "cosh":1, "tanh":1, "asinh":1, "acosh":1, "atanh":1, "exp":1, "log10":1,
+                    "log2":1, "log1p":1, "expm1":1, "cbrt":1, "square":1, "deg2rad":1, "rad2deg":1, "radians":1,
+                    "degrees":1, "ceil":1, "floor":1, "trunc":1, "round":1, "std":1, "mean":1,"sum":1, "ones":1,
+                    "zeros":1, "eye":1, "diag":1, "rand":1, "randn":1, "randint":3, "randint":3, "randint":3,
+                    "histplot":4, "View":1, 'head':1, 'tail':1, 'info':1, 'describe':1, 'shape':1, 'columns':1,}
     def __init__(self, name, arguments) -> None:
         self.name = name
         self.arguments = list(arguments)
@@ -111,10 +119,39 @@ class BuitInFunc:
                 return True if len(self.arguments) == 1 else False
             case "zeros":
                 return True if len(self.arguments) == 1 else False
+            case "std":
+                return True if len(self.arguments) == 1 else False
+            case "mean":
+                return True if len(self.arguments) == 1 else False
+            case "sum":
+                return True if len(self.arguments) == 1 else False
+            case "eye":
+                return True if len(self.arguments) == 1 else False
+            case "diag":
+                return True if len(self.arguments) == 1 else False
+            case "rand":
+                return True if len(self.arguments) == 1 else False
+            case "randn":
+                return True if len(self.arguments) == 1 else False
+            case "randint":
+                return True if len(self.arguments) in range(2,4) else False
+            case "histplot":
+                return True if len(self.arguments) in range(2,5) else False
+            case "View":
+                return False
+            case 'head':
+                return True if len(self.arguments) == 1 else False
+            case 'tail':
+                return True if len(self.arguments) == 1 else False
+            case 'info':
+                return True if len(self.arguments) == 1 else False
+            case 'describe':
+                return True if len(self.arguments) == 1 else False
+            case 'shape':
+                return True if len(self.arguments) == 1 else False
             case _ :
                 return True
             
-
 
     def addArgument(self, argument):
         self.arguments.insert(0,argument)
@@ -138,59 +175,55 @@ class BuitInFunc:
                         print("Error: Complex numbers must be created from two numbers.")
                         return None
                 case "integer":
-                    return int(self.arguments[0])
+                    return self.raiseArgumentTypeError(int)
                 case "string":
-                    return str(self.arguments[0])
+                    return self.raiseArgumentTypeError(str)
                 case "array":
-                    return np.array(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.array)
                 case "vector":
                     return tuple(self.arguments[0])
                 case "dataframe":
-                    return pd.DataFrame(self.arguments[0])
+                    return self.raiseArgumentTypeError(pd.DataFrame)
                 case "len":
-                    return len(self.arguments[0])
+                    return self.raiseArgumentTypeError(len)
                 case "bool":
-                    return bool(self.arguments[0])
+                    return self.raiseArgumentTypeError(bool)
                 case "import":
                     return read(self.arguments[0])
                 case "sqrt":
-                    if isinstance(self.arguments[0],(int,float)) and self.arguments[0] < 0:
-                        return complex(np.sqrt(complex(self.arguments[0])))
-                    if isinstance(self.arguments[0],np.ndarray) and (self.arguments[0] < 0).any():
-                        return np.sqrt(self.arguments[0].astype(complex))
-                    return  np.sqrt(self.arguments[0])
+                    return self.raiseArgumentTypeError(sqrt)
                 case "abs":
-                    return np.abs(self.arguments[0])
+                    return self.raiseArgumentTypeError(abs)
                 case "sin":
-                    return np.sin(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.sin)
                 case "cos":
-                    return np.cos(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.cos)
                 case "tan":
-                    return np.tan(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.tan)
                 case "asin":
-                    return np.arcsin(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.arcsin)
                 case "acos":
-                    return np.arccos(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.arccos)
                 case "atan":
-                    return np.arctan(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.arctan)
                 case "sinh":
-                    return np.sinh(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.sinh)
                 case "cosh":
-                    return np.cosh(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.cosh)
                 case "tanh":
-                    return np.tanh(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.tanh)
                 case "asinh":
-                    return np.arcsinh(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.arcsinh)
                 case "acosh":
-                    return np.arccosh(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.arccosh)
                 case "atanh":
-                    return np.arctanh(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.arctanh)
                 case "exp":
-                    return np.exp(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.exp)
                 case "log10":
-                    return np.log10(self.arguments[0])
+                    return self.raiseArgumentTypeError(lambda e: logarithm(self.arguments, np.log10))
                 case "log2":
-                    return np.log2(self.arguments[0])
+                    return self.raiseArgumentTypeError(lambda e:logarithm(self.arguments, np.log2))
                 case "log1p":
                     return np.log1p(self.arguments[0])
                 case "expm1":
@@ -198,29 +231,31 @@ class BuitInFunc:
                 case "cbrt":
                     return np.cbrt(self.arguments[0])
                 case "square":
-                    return np.square(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.square)
                 case "deg2rad":
-                    return np.deg2rad(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.deg2rad)
                 case "rad2deg":
-                    return np.rad2deg(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.rad2deg)
                 case "radians":
-                    return np.radians(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.radians)
                 case "degrees":
-                    return np.degrees(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.degrees)
                 case "ceil":
-                    return np.ceil(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.ceil)
                 case "floor":
-                    return np.floor(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.floor)
                 case "trunc":
-                    return np.trunc(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.trunc)
                 case "round":
-                    return np.round(self.arguments[0])
+                    return self.raiseArgumentTypeError(np.round)
                 case "linspace":
                     return linspace(self.arguments)
                 case "scatterplot":
                     return scatterplot(self.arguments)
                 case "lineplot":
                     return lineplot(self.arguments)
+                case "histplot":
+                    return histplot(self.arguments)
                 case "range":
                     return rangeF(self.arguments)
                 case "write":
@@ -229,25 +264,55 @@ class BuitInFunc:
                     print()
                     return None
                 case "log":
-                    if isinstance(self.arguments[0], np.ndarray) and (self.arguments[0] < 0).any():
-                        return np.log(self.arguments[0].astype(complex))
-                    elif isinstance(self.arguments[0], np.ndarray):
-                        return np.log(self.arguments[0])
-                    if self.arguments[0] < 0:
-                        return np.log(complex(self.arguments[0]))
-                    return np.log(self.arguments[0])
+                    return self.raiseArgumentTypeError(lambda e:logarithm(self.arguments, np.log))
+                case "std":
+                    return float(np.std(self.arguments[0]))
+                case "mean":
+                    return float(np.mean(self.arguments[0]))
+                case "sum":
+                    return float(np.sum(self.arguments[0]))
+                case "ones":
+                    return np.ones(self.arguments[0])
+                case "zeros":
+                    return np.zeros(self.arguments[0])
+                case "eye":
+                    return np.eye(self.arguments[0])
+                case "diag":
+                    return np.diag(self.arguments[0])
+                case "rand":
+                    return np.random.rand(self.arguments[0])
+                case "randn":
+                    return np.random.randn(self.arguments[0])
+                case "randint":
+                    return np.random.randint(self.arguments[0], self.arguments[1], self.arguments[2])
                 case _ :
                     return None
         else:
-            print(f"Argument Error: {self.name}() takes {BuitInFunc.Functions[self.name]} argument {len(self.arguments)} were given")
-            return None
+            return Error("ArgumentNumberError", f"{self.name}() takes {BuitInFunc.Functions[self.name]} argument {len(self.arguments)} were given")
         
     def __str__(self) -> str:
         return (str(self.name) + " " + str(self.arguments))
 
+    def raiseArgumentTypeError(self, function):
+        try:
+            return function(self.arguments[0])
+        except (TypeError, numpy_exceptions._UFuncNoLoopError, ValueError) as e:
+            return Error("ArgumentTypeError", f"You provided an invalid argument for {self.name}")
 
-
-
+def sqrt(arguments):
+    if isinstance(arguments[0],(int,float)) and arguments[0] < 0:
+        return complex(np.sqrt(complex(arguments[0])))
+    if isinstance(arguments[0],np.ndarray) and (arguments[0] < 0).any():
+        return np.sqrt(arguments[0].astype(complex))
+    return  np.sqrt(arguments[0])
+def logarithm(arguments, logFunc):
+    if isinstance(arguments[0], np.ndarray) and (arguments[0] < 0).any():
+        return logFunc(arguments[0].astype(complex))
+    elif isinstance(arguments[0], np.ndarray):
+        return logFunc(arguments[0])
+    if arguments[0] < 0:
+        return complex(logFunc(complex(arguments[0])))
+    return logFunc(arguments[0])
 def read_csv(filename):
     with open(filename, newline='') as csvfile:
         dialect = csv.Sniffer().sniff(csvfile.readline(), delimiters=';,|#\t')
@@ -262,10 +327,8 @@ def read(filename):
     for f in functions:
         try:
             return f(filename)
-            break
         except:
             pass
-    print("Error reading file.")
     return None
 def lineplot(arguments):
     if len(arguments) == 2:
@@ -290,6 +353,17 @@ def scatterplot(arguments):
             sns.scatterplot(data = arguments[0], x = arguments[1], y = arguments[2], hue = arguments[3])
     plt.show()
     return None
+def histplot(arguments):
+    if len(arguments) == 2:
+        data = arguments[0]
+        x = arguments[1]
+        sns.histplot(data, x = x)
+    if len(arguments) == 3:
+        data = arguments[0]
+        x = arguments[1]
+        hue = arguments[2]
+        sns.histplot(data, x = x, hue = hue)
+    plt.show()
 def rangeF(arguments):
     if len(arguments) == 1:
         return np.array(range(arguments[0]))

@@ -8,7 +8,6 @@ bricks copy.csv
 heartPTD.xlsx
 fromage.txt
 iris.csv
-view_table.py
 # C extensions
 *.so
 

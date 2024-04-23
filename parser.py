@@ -2,13 +2,14 @@ from sly import Parser
 from lexer import SciDataVizLexer
 from func import BuitInFunc
 from error import Error
+from view_table import TableView
 import numpy as np
 import numpy.core._exceptions as np_exceptions
 import pandas as pd
 import os
 import sys
 import pickle
-
+import re
 
 
 class SciDataVizParser(Parser):
@@ -22,11 +23,12 @@ class SciDataVizParser(Parser):
     # debugfile = 'debug.txt'
     tokens = SciDataVizLexer.tokens
 
-    def __init__(self, terminal) -> None:
+    def __init__(self, terminal, notebook) -> None:
         self.values = {"i":complex(0,1), "j": complex(0,1), "e":np.e, "pi":np.pi, "nan":np.nan, "inf":np.inf, "True":True, "False":False}
         with open('primitiveDataTypes.pickle', 'rb') as f:
             self.dataTypes = pickle.load(f)
         self.terminal = terminal
+        self.notebook = notebook
 
     def error(self, token):
         '''
@@ -51,6 +53,8 @@ class SciDataVizParser(Parser):
         return p.statement
     @_('statement ";" statements')
     def statements(self, p):
+        if isinstance(p.statement, Error):
+            return p.statement
         return p.statements
     @_('empty')
     def statements(self, p):
@@ -82,9 +86,15 @@ class SciDataVizParser(Parser):
             return p.value
         if isinstance(p.term, Error):
             return p.term
-        if self.areDigits(p.value, p.term):
-            return p.value - p.term
-        return Error("TypeError", "Must be from the same type")
+        try:
+            return np.subtract(p.value, p.term)
+        except (ValueError,np_exceptions.UFuncTypeError, TypeError) as e:
+            if isinstance(e,ValueError):
+                return Error("ValueError", "Matrices are not aligned")
+            elif isinstance(e,TypeError):
+                return Error("TypeError", f"You can't subtract a {self.dataTypes[type(p.value)]} and a {self.dataTypes[type(p.term)]}")
+            elif isinstance(e,np_exceptions.UFuncTypeError):
+                return Error("TypeError", "You can only do element wise subtraction between two arrays of the same data type")
 
     @_('MINUS factor %prec UMINUS')
     def factor(self, p):
@@ -139,7 +149,18 @@ class SciDataVizParser(Parser):
             return p.factor
         if self.areDigits(p.term, p.factor):
             return p.term % p.factor
-        return TypeError("Must between two numbers")
+        else:
+            try:
+                return np.mod(p.term, p.factor)
+            except (ValueError, TypeError, np_exceptions.UFuncTypeError) as e:
+                if isinstance(e,ValueError):
+                    return Error("ValueError", "Matrices are not aligned")
+                elif isinstance(e,TypeError):
+                    return Error("TypeError", f"You can't mod a {self.dataTypes[type(p.term)]} and a {self.dataTypes[type(p.factor)]}")
+                elif isinstance(e,np_exceptions.UFuncTypeError):
+                    return Error("TypeError", "You can only do element wise mod between two arrays of the same data type")
+                else:
+                    return Error("TypeError", "You can only do element wise mod between two arrays of the same data type")
 
     @_('term DIVIDE factor')
     def term(self, p):
@@ -148,7 +169,10 @@ class SciDataVizParser(Parser):
         if isinstance(p.factor, Error):
             return p.factor
         if self.areDigits(p.term, p.factor):
-            return p.term / p.factor
+            try:
+                return p.term / p.factor
+            except ZeroDivisionError:
+                return Error("ZeroDivisionError", "Division by zero")
         if isinstance(p.term, np.ndarray) and isinstance(p.factor, np.ndarray):
             if p.term.dtype == p.factor.dtype:
                 try:
@@ -170,8 +194,22 @@ class SciDataVizParser(Parser):
         if isinstance(p.factor, Error):
             return p.factor
         if self.areDigits(p.term, p.factor):
-            return p.term // p.factor
-        return TypeError("Must be from the same type")
+            try:
+                return p.term // p.factor
+            except ZeroDivisionError:
+                return Error("ZeroDivisionError", "Division by zero")
+        else:
+            try:
+                return np.floor_divide(p.term, p.factor)
+            except (ValueError, TypeError, np_exceptions.UFuncTypeError) as e:
+                if isinstance(e,ValueError):
+                    return Error("ValueError", "Matrices are not aligned")
+                elif isinstance(e,TypeError):
+                    return Error("TypeError", f"You can't floor divide a {self.dataTypes[type(p.term)]} and a {self.dataTypes[type(p.factor)]}")
+                elif isinstance(e,np_exceptions.UFuncTypeError):
+                    return Error("TypeError", "You can only do element wise floor division between two arrays of the same data type")
+                else:
+                    return Error("TypeError", "You can only do element wise floor division between two arrays of the same data type")
 
     @_('factor')
     def term(self, p):
@@ -226,14 +264,15 @@ class SciDataVizParser(Parser):
         return None
     @_('LS')
     def statement(self, p):
-        if(len(self.values) == 0):
-            print("No variables declared")
+        if len(self.values) == 0:
+            self.termianl.insert("end", "No variables declared")
         else:
+            self.terminal.insert("end", "\nVariable\tValue\n")
             for variable, value in self.values.items():
-                print(variable, end="")
-                s = str(value)
-                for line in s.splitlines():
-                    print(f"\t{line}")
+                value_lines = str(value).splitlines()
+                self.terminal.insert("end", f"{variable}\t{value_lines[0]}\n")
+                for line in value_lines[1:]:
+                    self.terminal.insert("end", f"\t{line}\n")
         return None
     
     @_('vector')
@@ -275,6 +314,17 @@ class SciDataVizParser(Parser):
     def factor(self, p):
         if isinstance(p.func, Error):
             return p.func
+        func:BuitInFunc = p.func
+        if func.name == "View" and len(func.arguments) == 1 and isinstance(func.arguments[0], pd.DataFrame):
+            Table = TableView(self.notebook, func.arguments[0])
+            Table.name = self.get_DataFrame_name(func.arguments[0])
+            current_tab = self.notebook.select()
+            current_frame = self.notebook.nametowidget(current_tab)
+            if any (re.match(r".!frame\d+.!label", child ) for child in map(str, current_frame.winfo_children())):
+                self.notebook.forget(current_tab)
+            self.notebook.add(Table.frame, text=Table.name)
+            self.notebook.select(Table.frame)
+            return None
         return p.func.exec()
     @_('READ')
     def value(self,p):
@@ -391,6 +441,11 @@ class SciDataVizParser(Parser):
     @_('TRUE')
     def value(self,p):
         return True
+    
+    def get_DataFrame_name(self, value):
+        for variable, val in self.values.items():
+            if isinstance(val, pd.DataFrame) and val.equals(value):
+                return variable
 
 if __name__ == '__main__':
     lexer = SciDataVizLexer()
