@@ -1,11 +1,10 @@
 import ttkbootstrap as tb
 from ttkbootstrap.constants import *
 import tkinter as tk
-from parser import SciDataVizParser
-from lexer import SciDataVizLexer
 from view_table import TableView
 from Terminal import Terminal
 from Text_editor import Texteditor
+from workspace import WorkSpace
 from tkinter import filedialog
 from tkinter import messagebox
 import re
@@ -13,18 +12,21 @@ import os
 
 class mainApp():
     def __init__(self) -> None:
-        self.root =  tb.Window(themename='superhero', title='SciDataViz Terminal')
-        self.root.geometry('800x600')
+        self.root =  tb.Window(themename='superhero', title='SciDataViz')
+        self.root.geometry('1200x800')
         self.defaultnotebookFrameDisplayed = True
         self.textareas = []
         self.createWidgets()
         self.bindKeys()
 
     def createWidgets(self):
-        self.TerminalFrame = tb.Frame(self.root, bootstyle='danger')
-        self.notebook = tb.Notebook(self.root, height=300)
+        self.TerminalFrame = tb.Frame(self.root)
+        self.WorkspaceFrame = tb.Frame(self.root, bootstyle = SECONDARY)
+        self.emptyFrame = tb.Frame(self.root, bootstyle = DANGER)
+        self.notebook = tb.Notebook(self.root, height=300, width=400)
         self.defaultnotebookFrame = self.creatnotebookFrame()
-        self.terminal = Terminal(self.TerminalFrame, self.notebook)
+        self.workspace = WorkSpace(self.WorkspaceFrame)
+        self.terminal = Terminal(self.TerminalFrame, self.notebook, self.workspace)
         self.notebook.add(self.defaultnotebookFrame, text="Welcome")
     def bindKeys(self):
         self.root.bind("<Command-q>", self.quit)
@@ -129,11 +131,14 @@ class mainApp():
         return "break"
 
     def pack(self):
-        self.notebook.grid(row=0, column=0, sticky="nsew")
-        self.TerminalFrame.grid(row=1, column=0, sticky="nsew")
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_rowconfigure(1, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
+        self.root.grid_columnconfigure(1,weight=1)
+        self.notebook.grid(row=0, column=1, sticky="nsew")
+        self.TerminalFrame.grid(row=1, column=1, sticky="nsew")
+        self.emptyFrame.grid(row = 0, column=0, sticky = "news")
+        self.WorkspaceFrame.grid(row=1, column=0, sticky="news")
 
     def mainloop(self):
         self.root.mainloop()

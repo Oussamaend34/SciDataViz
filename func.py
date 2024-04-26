@@ -163,9 +163,6 @@ class BuitInFunc:
                         with open('primitiveDataTypes.pickle', 'rb') as f:
                             dataTypes = pickle.load(f)
                         return dataTypes[type(self.arguments[0])]
-                    else:
-                        print(f"Argument Error: {self.name}() takes {BuitInFunc.Functions[self.name]} argument {len(self.arguments)} were given")
-                        return None
                 case "float":
                     return float(self.arguments[0])
                 case "complex":
@@ -259,10 +256,10 @@ class BuitInFunc:
                 case "range":
                     return rangeF(self.arguments)
                 case "write":
+                    s = ""
                     for argument in self.arguments:
-                        print(argument, end= " ")
-                    print()
-                    return None
+                        s  += str(argument) + "\n"
+                    return s.strip()
                 case "log":
                     return self.raiseArgumentTypeError(lambda e:logarithm(self.arguments, np.log))
                 case "std":
@@ -295,16 +292,18 @@ class BuitInFunc:
 
     def raiseArgumentTypeError(self, function):
         try:
+            print("Hi")
+            print(function)
             return function(self.arguments[0])
-        except (TypeError, numpy_exceptions._UFuncNoLoopError, ValueError) as e:
+        except (TypeError, numpy_exceptions._UFuncNoLoopError, ValueError):
             return Error("ArgumentTypeError", f"You provided an invalid argument for {self.name}")
 
 def sqrt(arguments):
-    if isinstance(arguments[0],(int,float)) and arguments[0] < 0:
-        return complex(np.sqrt(complex(arguments[0])))
-    if isinstance(arguments[0],np.ndarray) and (arguments[0] < 0).any():
-        return np.sqrt(arguments[0].astype(complex))
-    return  np.sqrt(arguments[0])
+    if isinstance(arguments,(int,float)) and arguments < 0:
+        return complex(np.sqrt(complex(arguments)))
+    if isinstance(arguments,np.ndarray) and (arguments < 0).any():
+        return np.sqrt(arguments.astype(complex))
+    return  np.sqrt(arguments)
 def logarithm(arguments, logFunc):
     if isinstance(arguments[0], np.ndarray) and (arguments[0] < 0).any():
         return logFunc(arguments[0].astype(complex))
@@ -381,3 +380,5 @@ def linspace(arguments):
             return np.linspace(arguments[0], arguments[1], arguments[2])
     return None
 
+if __name__ == '__main__':
+    print(sqrt([-1]))

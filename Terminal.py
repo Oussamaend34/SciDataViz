@@ -7,20 +7,22 @@ from view_table import TableView
 import pandas as pd
 
 class Terminal():
-    def __init__(self, root, notebook) -> None:
+    def __init__(self, root, notebook, workspace) -> None:
         self.terminal = tk.Text(root)
-        self.scrollbar = tb.Scrollbar(root, orient=tk.VERTICAL, bootstyle = 'primary-round')
         self.notebook = notebook
-        self.scrollbar.config(command=self.terminal.yview)
-        self.terminal.config(yscrollcommand=self.scrollbar.set)
+        self.workspace = workspace
         self.stack = []
         self.stackindex = 0
         self.lexer = SciDataVizLexer()
-        self.parser = SciDataVizParser(self.terminal, self.notebook)
+        self.parser = SciDataVizParser(self.terminal, self.notebook, self.workspace)
         self.terminal.tag_config("error", foreground="#e85651")
+        self.TerminalScrollbarY =tb.Scrollbar(root,command=self.terminal.yview, orient=tk.VERTICAL, bootstyle = 'primary-round')
+        self.TerminalScrollbarY.config(command=self.terminal.yview)
+        self.terminal.config(yscrollcommand=self.TerminalScrollbarY.set)
         self.printbasename()
         self.bindKeys()
-        self.pack()
+        self.TerminalScrollbarY.pack(side=tk.RIGHT, fill=tk.Y)
+        self.terminal.pack(fill=tk.BOTH, expand=True)
 
     def printbasename(self):
         self.terminal.insert("end", "SciDataViz>")
@@ -152,9 +154,6 @@ class Terminal():
         self.terminal.bind('<Command-v>', self.onCommandV)
         self.terminal.bind('<Command-x>', self.onCommandC)
         self.terminal.bind('<Command-minus>', self.printAssign)
-    def pack(self):
-        self.terminal.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
 if __name__ == "__main__":
     root = tb.Window(themename='superhero', title='SciDataViz Terminal')

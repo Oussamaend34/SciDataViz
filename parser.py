@@ -23,12 +23,14 @@ class SciDataVizParser(Parser):
     # debugfile = 'debug.txt'
     tokens = SciDataVizLexer.tokens
 
-    def __init__(self, terminal, notebook) -> None:
+    def __init__(self, terminal, notebook, workspace) -> None:
         self.values = {"i":complex(0,1), "j": complex(0,1), "e":np.e, "pi":np.pi, "nan":np.nan, "inf":np.inf, "True":True, "False":False}
         with open('primitiveDataTypes.pickle', 'rb') as f:
             self.dataTypes = pickle.load(f)
         self.terminal = terminal
         self.notebook = notebook
+        self.workspace = workspace
+        self.workspaceMap = {}
 
     def error(self, token):
         '''
@@ -54,6 +56,8 @@ class SciDataVizParser(Parser):
     @_('statement ";" statements')
     def statements(self, p):
         if isinstance(p.statement, Error):
+            return p.statement
+        if p.statements == None:
             return p.statement
         return p.statements
     @_('empty')
@@ -232,6 +236,10 @@ class SciDataVizParser(Parser):
         if isinstance(p.value, Error):
             return p.value
         else:
+            if p.ID in self.workspaceMap:
+                self.workspace.changeValue(self.workspaceMap[p.ID], p.value)
+            else:
+                self.workspaceMap[p.ID] = self.workspace.addVariable(p.ID, p.value)
             self.values[p.ID] = p.value
             return None
     @_('ID')
@@ -292,7 +300,16 @@ class SciDataVizParser(Parser):
             return True
         else:
             return False
+    def change_value(self, item_id, new_value):
+        # Get the current values of the item
+        current_values = self.workspace.workspace.item(item_id, "values")
         
+        # Modify the desired value
+        current_values = list(current_values)
+        current_values[1] = new_value
+        
+        # Update the item with the modified values
+        self.workspace.workspace.item(item_id, values=current_values)    
 
 
     def isiterable(self, value1):
@@ -320,7 +337,7 @@ class SciDataVizParser(Parser):
             Table.name = self.get_DataFrame_name(func.arguments[0])
             current_tab = self.notebook.select()
             current_frame = self.notebook.nametowidget(current_tab)
-            if any (re.match(r".!frame\d+.!label", child ) for child in map(str, current_frame.winfo_children())):
+            if any (re.match(r".!frame\d+.!label", child) for child in map(str, current_frame.winfo_children())):
                 self.notebook.forget(current_tab)
             self.notebook.add(Table.frame, text=Table.name)
             self.notebook.select(Table.frame)
