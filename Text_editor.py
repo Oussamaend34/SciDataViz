@@ -46,7 +46,6 @@ class Texteditor():
                     file.write(text)
                 self.file = file_path
     def saveAs(self, event):
-        print('save as')
         file_path = filedialog.asksaveasfilename(defaultextension=".txt")
         if file_path:
             with open(file_path, 'w') as file:

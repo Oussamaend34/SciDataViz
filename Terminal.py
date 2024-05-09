@@ -5,6 +5,7 @@ from lexer import SciDataVizLexer
 from error import Error
 from view_table import TableView
 import pandas as pd
+import re
 
 class Terminal():
     def __init__(self, root, notebook, workspace) -> None:
@@ -16,6 +17,7 @@ class Terminal():
         self.lexer = SciDataVizLexer()
         self.parser = SciDataVizParser(self.terminal, self.notebook, self.workspace)
         self.terminal.tag_config("error", foreground="#e85651")
+        self.terminal.tag_config("baseName", foreground="#3fb618")
         self.TerminalScrollbarY =tb.Scrollbar(root,command=self.terminal.yview, orient=tk.VERTICAL, bootstyle = 'primary-round')
         self.TerminalScrollbarY.config(command=self.terminal.yview)
         self.terminal.config(yscrollcommand=self.TerminalScrollbarY.set)
@@ -25,7 +27,28 @@ class Terminal():
         self.terminal.pack(fill=tk.BOTH, expand=True)
 
     def printbasename(self):
-        self.terminal.insert("end", "SciDataViz>")
+        self.terminal.insert("end", "SciDataViz> ")
+        self.terminal.mark_set("insert", 'end')
+        self.terminal.see("end")
+        self.terminal.focus_set()
+        self.terminal.tag_add("baseName", "end-1l", "end-1c")
+
+    def processCommand(self, command):
+
+
+        pattern = r'([a-zA-Z_][a-zA-Z0-9_]*)\['
+
+        replace = r'\1 ['
+
+        result = re.sub(pattern, replace, command, count=1)
+
+        original_regex = r'[a-zA-Z_][a-zA-Z0-9_]*?\[.*?\]'
+
+        replacement_pattern = r'(\g<0>)'
+
+        result = re.sub(original_regex, replacement_pattern, result)
+
+        return result
 
     def onReturn(self, event):
         command = self.terminal.get("1.0","end").splitlines()[-1].strip()
@@ -35,14 +58,16 @@ class Terminal():
         elif len(self.stack) >=1 and command != self.stack[0]:
             self.stack.insert(0,command)
         self.index = 0
+        self.terminal.insert("end", "\n")
+        result = None
         if command != '':
+            command = self.processCommand(command)
             result = self.parser.parse(self.lexer.tokenize(command))
             if not isinstance(result,type(None)):
-                self.terminal.insert("end",f"\n{result}")
+                self.terminal.insert("end",f"{result}")
             if isinstance(result, Error):
-
                 self.terminal.tag_add("error", "end-1l", "end-1c")
-        if command != 'clear':
+        if command != 'clear' and not isinstance(result, type(None)):
             self.terminal.insert("end", "\n")
         self.printbasename()
         self.terminal.mark_set("insert", 'end')
@@ -63,9 +88,16 @@ class Terminal():
             self.stack.insert(0,command)
         self.index = 0
         if command != '':
+            command = self.processCommand(command)
             result = self.parser.parse(self.lexer.tokenize(command))
             if not isinstance(result,type(None)):
-                self.terminal.insert("end",f"{result}\n")
+                self.terminal.insert("end",f"{result}")
+            if isinstance(result, Error):
+                self.terminal.tag_add("error", "end-1l", "end-1c")
+            if not isinstance(result,type(None)):
+                self.terminal.insert("end", "\n")
+            if re.match(r'.*write(.*?)', command):
+                self.terminal.insert("end", "\n")
         
         self.terminal.mark_set("insert", 'end')
         self.terminal.see("end")
@@ -128,7 +160,8 @@ class Terminal():
             self.terminal.mark_set(tk.INSERT, self.cursor_position)
     def onCommandC(self, event):
         self.terminal.clipboard_clear()
-        self.terminal.clipboard_append(self.terminal.selection_get())
+        if self.terminal.tag_ranges(tk.SEL):
+            self.terminal.clipboard_append(self.terminal.selection_get())
         return "break"
     def onCommandV(self, event):
         self.terminal.insert(tk.INSERT, self.terminal.clipboard_get())

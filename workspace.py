@@ -4,6 +4,7 @@ import tkinter as tk
 from random import randint, choice
 from numpy import ndarray
 from pandas import DataFrame
+import numpy as np
 
 
 class WorkSpace():
@@ -38,8 +39,8 @@ class WorkSpace():
         self.workspace.item(item_id, values=current_values)
     
     def valueToStr(self, value:ndarray|DataFrame):
-        if isinstance(value, ndarray) and len(str(value)) > 10:
-            return f"Array of {len(value)} elements."
+        if isinstance(value, ndarray) and len(str((value))) > 10:
+            return f"Array of {value.size} elements."
         elif isinstance(value, DataFrame):
             s = 'DataFrame: '
             for column in value.columns:

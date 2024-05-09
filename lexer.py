@@ -1,12 +1,14 @@
 from sly import Lexer
+from error import Error
 
 class SciDataVizLexer(Lexer):
     # Set of token names.   This is always required
     tokens = {  
                 NUMBER, ID, STRLT, TRUE, FALSE,
-                PLUS, MINUS, TIMES, DIVIDE, FLRDIV, MOD, MATMUL, ASSIGN,
+                PLUS, MINUS, TIMES, DIVIDE, FLRDIV, MOD, MATMUL, ASSIGN, POWER,
                 LPAREN , RPAREN, LSQB, RSQB, LQB, RQB, PIPE,
-                READ, QUIT, CLEAR, LS
+                READ, QUIT, CLEAR, LS,
+                GT, LT, GE, LE, EQ, NE, AND, OR, NOT
             }
 
 
@@ -16,6 +18,7 @@ class SciDataVizLexer(Lexer):
     ignore = ' \t'
 
     # Regular expression rules for tokens
+    POWER   = r'\*\*'
     PLUS    = r'\+'
     MINUS   = r'-'
     TIMES   = r'\*'
@@ -23,6 +26,12 @@ class SciDataVizLexer(Lexer):
     DIVIDE  = r'/'
     MOD     = r'%'
     MATMUL  = r'@'
+    GE      = r'>='
+    LE      = r'<='
+    EQ      = r'=='
+    GT      = r'>'
+    LT      = r'<'
+    NE      = r'!='
     ASSIGN  = r'(<-|=)'
     RPAREN  = r'\)'
     LPAREN  = r'\('
@@ -52,6 +61,9 @@ class SciDataVizLexer(Lexer):
     ID['read']      =   READ
     ID['True']      =   TRUE
     ID['False']     =   FALSE
+    ID['and']       =   AND
+    ID['or']        =   OR
+    ID['not']       =   NOT
 
     ignore_comment = r'\#.*'
 
@@ -61,12 +73,12 @@ class SciDataVizLexer(Lexer):
         self.lineno += t.value.count('\n')
 
     def error(self, t):
-        print('Line %d: Bad character %r' % (self.lineno, t.value[0]))
         self.index += 1
+        return Error(f"Illegal character '{t.value[0]}'", self.lineno)
 
 if __name__ == '__main__':
     data = '''
-{'A' : 1 , 'B' : 2 }
+iris["new_columns"] = iris["sepal_width"] + iris["petal_width"]
 '''
     lexer = SciDataVizLexer()
     for tok in lexer.tokenize(data):
