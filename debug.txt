@@ -19,8 +19,8 @@ Rule 15    value -> READ
 Rule 16    value -> term
 Rule 17    value -> value MINUS term  [precedence=left, level=5]
 Rule 18    value -> value PLUS term  [precedence=left, level=5]
-Rule 19    factor -> value LSQB value : value RSQB
-Rule 20    factor -> value LSQB value RSQB
+Rule 19    factor -> value LSQB value : value RSQB  [precedence=left, level=9]
+Rule 20    factor -> value LSQB value RSQB  [precedence=left, level=9]
 Rule 21    factor -> value PIPE func  [precedence=left, level=8]
 Rule 22    factor -> func
 Rule 23    factor -> vector
@@ -47,7 +47,7 @@ Rule 43    term -> term DIVIDE factor  [precedence=left, level=6]
 Rule 44    term -> term MOD factor  [precedence=left, level=6]
 Rule 45    term -> term MATMUL factor  [precedence=left, level=6]
 Rule 46    term -> term TIMES factor  [precedence=left, level=6]
-Rule 47    array -> LSQB elements RSQB
+Rule 47    array -> LSQB elements RSQB  [precedence=left, level=9]
 Rule 48    elements -> value , elements
 Rule 49    elements -> value
 Rule 50    elements -> empty
@@ -2713,7 +2713,6 @@ state 60
     TIMES           reduce using rule 24 (factor -> NOT value .)
     MINUS           reduce using rule 24 (factor -> NOT value .)
     PLUS            reduce using rule 24 (factor -> NOT value .)
-    LSQB            reduce using rule 24 (factor -> NOT value .)
     OR              reduce using rule 24 (factor -> NOT value .)
     AND             reduce using rule 24 (factor -> NOT value .)
     NE              reduce using rule 24 (factor -> NOT value .)
@@ -2729,6 +2728,7 @@ state 60
     :               reduce using rule 24 (factor -> NOT value .)
     RPAREN          reduce using rule 24 (factor -> NOT value .)
     RQB             reduce using rule 24 (factor -> NOT value .)
+    LSQB            shift and go to state 38
     PIPE            shift and go to state 39
 
 
@@ -3134,7 +3134,6 @@ state 73
     MOD             reduce using rule 25 (factor -> value OR value .)
     MATMUL          reduce using rule 25 (factor -> value OR value .)
     TIMES           reduce using rule 25 (factor -> value OR value .)
-    LSQB            reduce using rule 25 (factor -> value OR value .)
     OR              reduce using rule 25 (factor -> value OR value .)
     AND             reduce using rule 25 (factor -> value OR value .)
     ;               reduce using rule 25 (factor -> value OR value .)
@@ -3146,6 +3145,7 @@ state 73
     RQB             reduce using rule 25 (factor -> value OR value .)
     MINUS           shift and go to state 36
     PLUS            shift and go to state 37
+    LSQB            shift and go to state 38
     PIPE            shift and go to state 39
     NE              shift and go to state 42
     EQ              shift and go to state 43
@@ -3177,7 +3177,6 @@ state 74
     MOD             reduce using rule 26 (factor -> value AND value .)
     MATMUL          reduce using rule 26 (factor -> value AND value .)
     TIMES           reduce using rule 26 (factor -> value AND value .)
-    LSQB            reduce using rule 26 (factor -> value AND value .)
     OR              reduce using rule 26 (factor -> value AND value .)
     AND             reduce using rule 26 (factor -> value AND value .)
     ;               reduce using rule 26 (factor -> value AND value .)
@@ -3189,6 +3188,7 @@ state 74
     RQB             reduce using rule 26 (factor -> value AND value .)
     MINUS           shift and go to state 36
     PLUS            shift and go to state 37
+    LSQB            shift and go to state 38
     PIPE            shift and go to state 39
     NE              shift and go to state 42
     EQ              shift and go to state 43
@@ -3220,7 +3220,6 @@ state 75
     MOD             reduce using rule 27 (factor -> value NE value .)
     MATMUL          reduce using rule 27 (factor -> value NE value .)
     TIMES           reduce using rule 27 (factor -> value NE value .)
-    LSQB            reduce using rule 27 (factor -> value NE value .)
     OR              reduce using rule 27 (factor -> value NE value .)
     AND             reduce using rule 27 (factor -> value NE value .)
     NE              reduce using rule 27 (factor -> value NE value .)
@@ -3238,6 +3237,7 @@ state 75
     RQB             reduce using rule 27 (factor -> value NE value .)
     MINUS           shift and go to state 36
     PLUS            shift and go to state 37
+    LSQB            shift and go to state 38
     PIPE            shift and go to state 39
 
 
@@ -3263,7 +3263,6 @@ state 76
     MOD             reduce using rule 28 (factor -> value EQ value .)
     MATMUL          reduce using rule 28 (factor -> value EQ value .)
     TIMES           reduce using rule 28 (factor -> value EQ value .)
-    LSQB            reduce using rule 28 (factor -> value EQ value .)
     OR              reduce using rule 28 (factor -> value EQ value .)
     AND             reduce using rule 28 (factor -> value EQ value .)
     NE              reduce using rule 28 (factor -> value EQ value .)
@@ -3281,6 +3280,7 @@ state 76
     RQB             reduce using rule 28 (factor -> value EQ value .)
     MINUS           shift and go to state 36
     PLUS            shift and go to state 37
+    LSQB            shift and go to state 38
     PIPE            shift and go to state 39
 
 
@@ -3306,7 +3306,6 @@ state 77
     MOD             reduce using rule 29 (factor -> value LE value .)
     MATMUL          reduce using rule 29 (factor -> value LE value .)
     TIMES           reduce using rule 29 (factor -> value LE value .)
-    LSQB            reduce using rule 29 (factor -> value LE value .)
     OR              reduce using rule 29 (factor -> value LE value .)
     AND             reduce using rule 29 (factor -> value LE value .)
     NE              reduce using rule 29 (factor -> value LE value .)
@@ -3324,6 +3323,7 @@ state 77
     RQB             reduce using rule 29 (factor -> value LE value .)
     MINUS           shift and go to state 36
     PLUS            shift and go to state 37
+    LSQB            shift and go to state 38
     PIPE            shift and go to state 39
 
 
@@ -3349,7 +3349,6 @@ state 78
     MOD             reduce using rule 30 (factor -> value GE value .)
     MATMUL          reduce using rule 30 (factor -> value GE value .)
     TIMES           reduce using rule 30 (factor -> value GE value .)
-    LSQB            reduce using rule 30 (factor -> value GE value .)
     OR              reduce using rule 30 (factor -> value GE value .)
     AND             reduce using rule 30 (factor -> value GE value .)
     NE              reduce using rule 30 (factor -> value GE value .)
@@ -3367,6 +3366,7 @@ state 78
     RQB             reduce using rule 30 (factor -> value GE value .)
     MINUS           shift and go to state 36
     PLUS            shift and go to state 37
+    LSQB            shift and go to state 38
     PIPE            shift and go to state 39
 
 
@@ -3392,7 +3392,6 @@ state 79
     MOD             reduce using rule 31 (factor -> value LT value .)
     MATMUL          reduce using rule 31 (factor -> value LT value .)
     TIMES           reduce using rule 31 (factor -> value LT value .)
-    LSQB            reduce using rule 31 (factor -> value LT value .)
     OR              reduce using rule 31 (factor -> value LT value .)
     AND             reduce using rule 31 (factor -> value LT value .)
     NE              reduce using rule 31 (factor -> value LT value .)
@@ -3410,6 +3409,7 @@ state 79
     RQB             reduce using rule 31 (factor -> value LT value .)
     MINUS           shift and go to state 36
     PLUS            shift and go to state 37
+    LSQB            shift and go to state 38
     PIPE            shift and go to state 39
 
 
@@ -3435,7 +3435,6 @@ state 80
     MOD             reduce using rule 32 (factor -> value GT value .)
     MATMUL          reduce using rule 32 (factor -> value GT value .)
     TIMES           reduce using rule 32 (factor -> value GT value .)
-    LSQB            reduce using rule 32 (factor -> value GT value .)
     OR              reduce using rule 32 (factor -> value GT value .)
     AND             reduce using rule 32 (factor -> value GT value .)
     NE              reduce using rule 32 (factor -> value GT value .)
@@ -3453,6 +3452,7 @@ state 80
     RQB             reduce using rule 32 (factor -> value GT value .)
     MINUS           shift and go to state 36
     PLUS            shift and go to state 37
+    LSQB            shift and go to state 38
     PIPE            shift and go to state 39
 
 

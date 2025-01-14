@@ -238,7 +238,7 @@ class BasicFunc:
                     s = ""
                     for argument in self.arguments:
                         s  += str(argument) + "\n"
-                    return s.strip()
+                    return s
                 case "log":
                     return self.raiseArgumentTypeError(lambda e:logarithm(self.arguments, np.log))
                 case "randn":

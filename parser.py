@@ -430,7 +430,6 @@ class SciDataVizParser(Parser):
             s = ""
             for argument in func.arguments:
                 s  += str(argument) + "\n"
-            s = s[:-1]
             self.terminal.insert("end", s)
             return None
         return p.func.exec()
